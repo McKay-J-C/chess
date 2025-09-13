@@ -1,5 +1,8 @@
 package chess;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  * A chessboard that can hold and rearrange chess pieces.
  * <p>
@@ -9,8 +12,47 @@ package chess;
 public class ChessBoard {
 
     ChessPiece[][] squares = new ChessPiece[8][8];
+
     public ChessBoard() {
-        
+
+    }
+
+
+//    @Override
+//    public boolean equals(Object o) {
+//        if (o == null || getClass() != o.getClass()) {
+//            return false;
+//        }
+//        ChessBoard that = (ChessBoard) o;
+//        for (int i=0; i < 8; i++) {
+//            for (int j=0; j < 8; j++) {
+//                if (that.squares[i][j] == null || squares[i][j].getClass() != that.squares[i][j].getClass()) {
+//                    return false;
+//                }
+//                if (!squares[i][j].equals(that.squares[i][j])) {
+//                    return false;
+//                }
+//            }
+//        }
+//        return true;
+//    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessBoard that = (ChessBoard) o;
+        return Objects.deepEquals(squares, that.squares);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(squares);
     }
 
     /**
@@ -41,6 +83,7 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        throw new RuntimeException("Not implemented");
+
+        //throw new RuntimeException("Not implemented");
     }
 }
