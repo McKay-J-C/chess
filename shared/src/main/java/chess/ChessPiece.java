@@ -70,11 +70,26 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+        if (this.type == PieceType.BISHOP) {
+            return BishopMove.getMoves(board, myPosition);
+        } else if (this.type == PieceType.KING) {
+            return KingMove.getMoves(board, myPosition);
+        } else if (this.type == PieceType.KNIGHT) {
+            return KnightMove.getMoves(board, myPosition);
+        } else if (this.type == PieceType.PAWN) {
+            return PawnMove.getMoves(board, myPosition);
+        } else if (this.type == PieceType.QUEEN) {
+            return QueenMove.getMoves(board, myPosition);
+        } else if (this.type == PieceType.ROOK) {
+            return RookMove.getMoves(board, myPosition);
+        } else {
+            throw InvalidMoveException;
+        }
 //        ChessPiece piece = board.getPiece(myPosition);
 //        if (piece.getPieceType() == PieceType.BISHOP) {
 //            return List.of(new ChessMove(new ChessPosition(5,4), new ChessPosition(1,8), null));
 //        }
-        return List.of();
+//        return List.of();
 //      throw new RuntimeException("Not implemented");
     }
 }
