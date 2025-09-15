@@ -8,6 +8,6 @@ public class MoveHelper {
         if (row < 1 || row > 8 || col < 1 || col > 8) {
             return false;
         }
-        return board.squares[row][col] == null;
+        return board.squares[row-1][col-1] == null;
     }
 }
