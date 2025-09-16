@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Collection;
 
 public class BishopMove extends Move {
-
     static Collection<ChessMove> moves = new java.util.ArrayList<>(List.of());
 
 
@@ -26,6 +25,7 @@ public class BishopMove extends Move {
 
         return moves;
     }
+
 
 
 }
