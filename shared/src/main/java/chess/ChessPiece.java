@@ -71,7 +71,7 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         if (this.type == PieceType.KING) {
-            return KingMove.getMoves(board, myPosition);
+            return KingMove.getMoves(board, myPosition, this.pieceColor);
         }
         //else if (this.type == PieceType.BISHOP) {
 //            return BishopMove.getMoves(board, myPosition);
