@@ -1,7 +1,6 @@
 package chess;
 
 import java.util.Collection;
-import java.util.List;
 
 public class Move {
 
@@ -19,13 +18,12 @@ public class Move {
     }
 
     static Collection<ChessMove> checkContinuousMove(int row, int col, ChessPosition pos, ChessBoard board, ChessGame.TeamColor color, BishopMove.Direction direction, Collection<ChessMove> moves) {
-//        Collection<ChessMove> moves = new java.util.ArrayList<>(List.of());
         ChessPosition newPos = new ChessPosition(row,col);
 
         if (checkOnBoard(newPos)) {
             ChessGame.TeamColor newColor = getColor(newPos, board);
             if (newColor != color) {
-                ChessMove move = new ChessMove(pos, newPos, null);
+                ChessMove move = new ChessMove(pos, newPos);
                 moves.add(move);
                 if (newColor == null) {
                     if (direction == Direction.DOWN_LEFT) {
@@ -58,9 +56,7 @@ public class Move {
         return moves;
     }
 
-//    void continuousMoveHelper()
-
-    static protected enum Direction {
+    protected enum Direction {
         DOWN_LEFT,
         DOWN_RIGHT,
         UP_LEFT,

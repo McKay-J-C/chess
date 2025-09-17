@@ -81,16 +81,10 @@ public class ChessPiece {
             return RookMove.getMoves(board, myPosition, this.pieceColor);
         } else if (this.type == PieceType.QUEEN) {
             return QueenMove.getMoves(board, myPosition, this.pieceColor);
-        }
-//        } else if (this.type == PieceType.PAWN) {
-//            return PawnMove.getMoves(board, myPosition);
-
-//        } else {
+        } else if (this.type == PieceType.PAWN) {
+            return PawnMove.getMoves(board, myPosition, this.pieceColor);
+        } //else {
 //            throw InvalidMoveException;
-//        }
-//        ChessPiece piece = board.getPiece(myPosition);
-//        if (piece.getPieceType() == PieceType.BISHOP) {
-//            return List.of(new ChessMove(new ChessPosition(5,4), new ChessPosition(1,8), null));
 //        }
         return List.of();
     }

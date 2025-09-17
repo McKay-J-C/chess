@@ -21,6 +21,12 @@ public class ChessMove {
         this.promotionPiece = promotionPiece;
     }
 
+    public ChessMove(ChessPosition startPosition, ChessPosition endPosition) {
+        this.startPosition = startPosition;
+        this.endPosition = endPosition;
+        this.promotionPiece = null;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -65,4 +71,5 @@ public class ChessMove {
     public String toString() {
         return String.format("%s,%s", startPosition, endPosition);
     }
+
 }
