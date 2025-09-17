@@ -77,13 +77,14 @@ public class ChessPiece {
             return KnightMove.getMoves(board, myPosition, this.pieceColor);
         } else if (this.type == PieceType.BISHOP) {
             return BishopMove.getMoves(board, myPosition, this.pieceColor);
+        } else if (this.type == PieceType.ROOK) {
+            return RookMove.getMoves(board, myPosition, this.pieceColor);
+        } else if (this.type == PieceType.QUEEN) {
+            return QueenMove.getMoves(board, myPosition, this.pieceColor);
         }
 //        } else if (this.type == PieceType.PAWN) {
 //            return PawnMove.getMoves(board, myPosition);
-//        } else if (this.type == PieceType.QUEEN) {
-//            return QueenMove.getMoves(board, myPosition);
-//        } else if (this.type == PieceType.ROOK) {
-//            return RookMove.getMoves(board, myPosition);
+
 //        } else {
 //            throw InvalidMoveException;
 //        }
