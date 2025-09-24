@@ -1,7 +1,7 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -13,25 +13,11 @@ import java.util.Objects;
 public class ChessPiece {
 
     private final ChessGame.TeamColor pieceColor;
-    private final PieceType type;
+    private final PieceType pieceType;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor;
-        this.type = type;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        ChessPiece that = (ChessPiece) o;
-        return pieceColor == that.pieceColor && type == that.type;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(pieceColor, type);
+        this.pieceType = type;
     }
 
     /**
@@ -51,15 +37,27 @@ public class ChessPiece {
      */
     public ChessGame.TeamColor getTeamColor() {
         return pieceColor;
-        //throw new RuntimeException("Not implemented");
     }
 
     /**
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
-        return type;
-        //throw new RuntimeException("Not implemented");
+        return pieceType;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessPiece that = (ChessPiece) o;
+        return pieceColor == that.pieceColor && pieceType == that.pieceType;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceColor, pieceType);
     }
 
     /**
@@ -70,22 +68,26 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-//        return Move.getMove(board, myPosition, this);
-        if (this.type == PieceType.KING) {
-            return KingMove.getMoves(board, myPosition, this.pieceColor);
-        } else if (this.type == PieceType.KNIGHT) {
-            return KnightMove.getMoves(board, myPosition, this.pieceColor);
-        } else if (this.type == PieceType.BISHOP) {
-            return BishopMove.getMoves(board, myPosition, this.pieceColor);
-        } else if (this.type == PieceType.ROOK) {
-            return RookMove.getMoves(board, myPosition, this.pieceColor);
-        } else if (this.type == PieceType.QUEEN) {
-            return QueenMove.getMoves(board, myPosition, this.pieceColor);
-        } else if (this.type == PieceType.PAWN) {
-            return PawnMove.getMoves(board, myPosition, this.pieceColor);
-        } //else {
-//            throw InvalidMoveException;
-//        }
-        return List.of();
+        if (pieceType == PieceType.KING) {
+            return new KingMoves(board, this, myPosition).getMoves();
+        }
+        else if (pieceType == PieceType.KNIGHT) {
+            return new KnightMoves(board, this, myPosition).getMoves();
+        }
+        else if (pieceType == PieceType.ROOK) {
+            return new RookMoves(board, this, myPosition).getMoves();
+        }
+        else if (pieceType == PieceType.BISHOP) {
+            return new BishopMoves(board, this, myPosition).getMoves();
+        }
+        else if (pieceType == PieceType.QUEEN) {
+            return new QueenMoves(board, this, myPosition).getMoves();
+        }
+        else if (pieceType == PieceType.PAWN) {
+            return new PawnMoves(board, this, myPosition).getMoves();
+        }
+        else {
+            return new ArrayList<>();
+        }
     }
 }

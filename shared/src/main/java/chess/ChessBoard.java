@@ -17,44 +17,6 @@ public class ChessBoard {
 
     }
 
-
-//    @Override
-//    public boolean equals(Object o) {
-//        if (o == null || getClass() != o.getClass()) {
-//            return false;
-//        }
-//        ChessBoard that = (ChessBoard) o;
-//        for (int i=0; i < 8; i++) {
-//            for (int j=0; j < 8; j++) {
-//                if (that.squares[i][j] == null || squares[i][j].getClass() != that.squares[i][j].getClass()) {
-//                    return false;
-//                }
-//                if (!squares[i][j].equals(that.squares[i][j])) {
-//                    return false;
-//                }
-//            }
-//        }
-//        return true;
-//    }
-
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        ChessBoard that = (ChessBoard) o;
-        return Objects.deepEquals(squares, that.squares);
-    }
-
-    @Override
-    public int hashCode() {
-        return Arrays.deepHashCode(squares);
-    }
-
     /**
      * Adds a chess piece to the chessboard
      *
@@ -63,7 +25,6 @@ public class ChessBoard {
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
         squares[position.getRow()-1][position.getColumn()-1] = piece;
-//        throw new RuntimeException("Not implemented");
     }
 
     /**
@@ -75,7 +36,6 @@ public class ChessBoard {
      */
     public ChessPiece getPiece(ChessPosition position) {
         return squares[position.getRow()-1][position.getColumn()-1];
-        //throw new RuntimeException("Not implemented");
     }
 
     /**
@@ -83,36 +43,36 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        for (int i=1; i < 9; i++) {
-            ChessPiece pawn = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
-            ChessPosition pos = new ChessPosition(2, i);
-            addPiece(pos, pawn);
+        for (int i=1; i<=8; i++) {
+            addPiece(new ChessPosition(2, i), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+            addPiece(new ChessPosition(7, i), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
         }
-        for (int i=1; i < 9; i++) {
-            ChessPiece pawn = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
-            ChessPosition pos = new ChessPosition(7, i);
-            addPiece(pos, pawn);
-        }
-        insertDefaultRow(ChessGame.TeamColor.WHITE);
-        insertDefaultRow(ChessGame.TeamColor.BLACK);
-        //throw new RuntimeException("Not implemented");
+        makeDefaultRow(1, ChessGame.TeamColor.WHITE);
+        makeDefaultRow(8, ChessGame.TeamColor.BLACK);
     }
 
-    public void insertDefaultRow(ChessGame.TeamColor color) {
-        int row=0;
-        if (color == ChessGame.TeamColor.WHITE) {
-            row = 1;
-        }
-        if (color == ChessGame.TeamColor.BLACK) {
-            row = 8;
-        }
+    private void makeDefaultRow(int row, ChessGame.TeamColor color) {
         addPiece(new ChessPosition(row, 1), new ChessPiece(color, ChessPiece.PieceType.ROOK));
-        addPiece(new ChessPosition(row, 8), new ChessPiece(color, ChessPiece.PieceType.ROOK));
         addPiece(new ChessPosition(row, 2), new ChessPiece(color, ChessPiece.PieceType.KNIGHT));
-        addPiece(new ChessPosition(row, 7), new ChessPiece(color, ChessPiece.PieceType.KNIGHT));
         addPiece(new ChessPosition(row, 3), new ChessPiece(color, ChessPiece.PieceType.BISHOP));
-        addPiece(new ChessPosition(row, 6), new ChessPiece(color, ChessPiece.PieceType.BISHOP));
         addPiece(new ChessPosition(row, 4), new ChessPiece(color, ChessPiece.PieceType.QUEEN));
         addPiece(new ChessPosition(row, 5), new ChessPiece(color, ChessPiece.PieceType.KING));
+        addPiece(new ChessPosition(row, 6), new ChessPiece(color, ChessPiece.PieceType.BISHOP));
+        addPiece(new ChessPosition(row, 7), new ChessPiece(color, ChessPiece.PieceType.KNIGHT));
+        addPiece(new ChessPosition(row, 8), new ChessPiece(color, ChessPiece.PieceType.ROOK));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessBoard that = (ChessBoard) o;
+        return Objects.deepEquals(squares, that.squares);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(squares);
     }
 }

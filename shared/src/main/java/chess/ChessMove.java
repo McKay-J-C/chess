@@ -27,6 +27,30 @@ public class ChessMove {
         this.promotionPiece = null;
     }
 
+    /**
+     * @return ChessPosition of starting location
+     */
+    public ChessPosition getStartPosition() {
+        return startPosition;
+    }
+
+    /**
+     * @return ChessPosition of ending location
+     */
+    public ChessPosition getEndPosition() {
+        return endPosition;
+    }
+
+    /**
+     * Gets the type of piece to promote a pawn to if pawn promotion is part of this
+     * chess move
+     *
+     * @return Type of piece to promote a pawn to, or null if no promotion
+     */
+    public ChessPiece.PieceType getPromotionPiece() {
+        return promotionPiece;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -41,35 +65,8 @@ public class ChessMove {
         return Objects.hash(startPosition, endPosition, promotionPiece);
     }
 
-    /**
-     * @return ChessPosition of starting location
-     */
-    public ChessPosition getStartPosition() {
-        return startPosition;
-        //throw new RuntimeException("Not implemented");
-    }
-
-    /**
-     * @return ChessPosition of ending location
-     */
-    public ChessPosition getEndPosition() {
-        return endPosition;
-        //throw new RuntimeException("Not implemented");
-    }
-    /**
-     * Gets the type of piece to promote a pawn to if pawn promotion is part of this
-     * chess move
-     *
-     * @return Type of piece to promote a pawn to, or null if no promotion
-     */
-    public ChessPiece.PieceType getPromotionPiece() {
-        return promotionPiece;
-        //throw new RuntimeException("Not implemented");
-    }
-
     @Override
     public String toString() {
-        return String.format("%s,%s", startPosition, endPosition);
+        return startPosition.toString() + endPosition.toString();
     }
-
 }
