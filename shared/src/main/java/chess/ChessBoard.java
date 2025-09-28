@@ -17,6 +17,10 @@ public class ChessBoard {
 
     }
 
+    public ChessBoard(ChessPiece[][] curSquares) {
+        squares = curSquares;
+    }
+
     /**
      * Adds a chess piece to the chessboard
      *
@@ -25,6 +29,10 @@ public class ChessBoard {
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
         squares[position.getRow()-1][position.getColumn()-1] = piece;
+    }
+
+    public void removePiece(ChessPosition position) {
+        squares[position.getRow()-1][position.getColumn()-1] = null;
     }
 
     /**
@@ -74,5 +82,10 @@ public class ChessBoard {
     @Override
     public int hashCode() {
         return Arrays.deepHashCode(squares);
+    }
+
+    @Override
+    public ChessBoard clone() {
+        return new ChessBoard(squares.clone());
     }
 }
