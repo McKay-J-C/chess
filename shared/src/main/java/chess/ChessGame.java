@@ -80,14 +80,6 @@ public class ChessGame {
         return checkedMoves;
     }
 
-//    public void removePiece(ChessPosition pos) {
-//        board.removePiece(pos);
-//    }
-//
-//    public void addPiece(ChessPosition pos, ChessPiece piece) {
-//        board.addPiece(pos, piece);
-//    }
-
     /**
      * Makes a move in a chess game
      *
