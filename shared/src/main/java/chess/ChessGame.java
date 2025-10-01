@@ -56,7 +56,7 @@ public class ChessGame {
      * @return Set of valid moves for requested piece, or null if no piece at
      * startPosition
      */
-    public Collection<ChessMove> validMoves(ChessPosition startPosition) {
+    public ArrayList<ChessMove> validMoves(ChessPosition startPosition) {
         ArrayList<ChessMove> checkedMoves = new ArrayList<>();
         ChessPiece piece = board.getPiece(startPosition);
         if (piece == null) {
@@ -206,8 +206,20 @@ public class ChessGame {
         if (isInCheck(teamColor)) {
             return false;
         }
-        ArrayList<ChessMove> moves;
-        return true;
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        for (int i=1; i<=8; i++) {
+            for (int j=1; j<=8; j++) {
+                ChessPosition curPos = new ChessPosition(i,j);
+                ChessPiece piece = board.getPiece(curPos);
+                if (piece != null && piece.getTeamColor() == teamColor) {
+                    ArrayList<ChessMove> newMoves = validMoves(curPos);
+                    if (newMoves != null) {
+                        moves.addAll(newMoves);
+                    }
+                }
+            }
+        }
+        return moves.isEmpty();
     }
 
     /**
