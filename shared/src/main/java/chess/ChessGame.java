@@ -89,12 +89,16 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPosition startPos = move.getStartPosition();
-        if (board.getPiece(startPos).getTeamColor() != teamTurn) {
+        ChessPiece piece = board.getPiece(startPos);
+        if (piece == null) {
+            throw new InvalidMoveException("No piece at this location");
+        }
+        if (piece.getTeamColor() != teamTurn) {
            throw new InvalidMoveException("Not correct team turn");
         }
         Collection<ChessMove> valMoves = validMoves(startPos);
         if (!valMoves.contains(move)) {
-            throw new InvalidMoveException("Not valid move");
+            throw new InvalidMoveException("Not valid move for selected piece");
         }
         makeMoveHelper(move, board);
         if (teamTurn == TeamColor.WHITE) {
@@ -106,16 +110,17 @@ public class ChessGame {
 
     private void makeMoveHelper(ChessMove move, ChessBoard board) {
         ChessPosition startPos = move.getStartPosition();
+        ChessPosition endPos = move.getEndPosition();
         ChessPiece piece = board.getPiece(startPos);
+
         board.removePiece(startPos);
-        board.addPiece(move.getEndPosition(), piece);
-        if (piece.getPieceType() == ChessPiece.PieceType.KING) {
-            ChessPosition endPos = move.getEndPosition();
-            if (piece.getTeamColor() == TeamColor.BLACK) {
-                blackKingPos = endPos;
-            } else {
-                whiteKingPos = endPos;
-            }
+        board.addPiece(endPos, piece);
+        updateKingPos(piece, endPos);
+
+        //Check if pawn is promoting
+        ChessPiece.PieceType promPiece = move.getPromotionPiece();
+        if (move.getPromotionPiece() != null) {
+            board.addPiece(endPos, new ChessPiece(piece.getTeamColor(), promPiece));
         }
     }
 
