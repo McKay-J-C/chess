@@ -21,6 +21,7 @@ public class ChessGame {
         teamTurn = TeamColor.WHITE;
         board = new ChessBoard();
         board.resetBoard();
+        //Keeping track of King position makes check easier
         whiteKingPos = new ChessPosition(1, 5);
         blackKingPos = new ChessPosition(8, 5);
     }
@@ -64,6 +65,7 @@ public class ChessGame {
         }
 
         TeamColor color = piece.getTeamColor();
+        //Gets all the pieceMoves for the piece at this position
         Collection<ChessMove> moves = piece.pieceMoves(board, startPosition);
         //Make temporary board to see if moves leads to check
         ChessBoard testBoard = board.clone();
@@ -81,6 +83,9 @@ public class ChessGame {
         return checkedMoves;
     }
 
+
+
+
     /**
      * Makes a move in a chess game
      *
@@ -96,11 +101,14 @@ public class ChessGame {
         if (piece.getTeamColor() != teamTurn) {
            throw new InvalidMoveException("Not correct team turn");
         }
+        //Check if move in list of valid moves
         Collection<ChessMove> valMoves = validMoves(startPos);
         if (!valMoves.contains(move)) {
             throw new InvalidMoveException("Not valid move for selected piece");
         }
+        //Change the board based on the move
         makeMoveHelper(move, board);
+        //Change team turn to other team
         if (teamTurn == TeamColor.WHITE) {
             teamTurn = TeamColor.BLACK;
         } else {
@@ -113,8 +121,10 @@ public class ChessGame {
         ChessPosition endPos = move.getEndPosition();
         ChessPiece piece = board.getPiece(startPos);
 
+        //Update board and king position
         board.removePiece(startPos);
         board.addPiece(endPos, piece);
+        //This checks if piece is a king in the function
         updateKingPos(piece, endPos);
 
         //Check if pawn is promoting
@@ -136,13 +146,17 @@ public class ChessGame {
 
     private boolean checkHelper(TeamColor teamColor, ChessBoard curBoard) {
         ChessPosition kingPos = getKingPos(teamColor);
+        //Loops through every square, and then checks the possible moves for each piece of the opposite color
         for (int i=1; i<=8; i++) {
             for (int j=1; j<=8; j++) {
                 ChessPosition curPos = new ChessPosition(i,j);
                 ChessPiece piece = curBoard.getPiece(curPos);
+                //checking if piece is the other team
                 if (piece != null && piece.getTeamColor() != teamColor) {
+                    //Get all the moves that piece can make
                     Collection<ChessMove> pieceMoves = piece.pieceMoves(curBoard, curPos);
                     for (ChessMove move : pieceMoves) {
+                        //If a move attacks the king, the king is in check
                         if (move.getEndPosition().equals(kingPos)) {
                             return true;
                         }
@@ -201,20 +215,38 @@ public class ChessGame {
     }
 
     private boolean noValidMoves(TeamColor teamColor) {
-        ArrayList<ChessMove> moves = new ArrayList<>();
+        //Checks king first for efficiency
+        if (kingMoveOutOfCheck(teamColor)) {
+            return false;
+        }
+        //Loops through every piece on the board, then checks if moving that piece can remove check
         for (int i=1; i<=8; i++) {
             for (int j=1; j<=8; j++) {
                 ChessPosition curPos = new ChessPosition(i,j);
                 ChessPiece piece = board.getPiece(curPos);
-                if (piece != null && piece.getTeamColor() == teamColor) {
-                    ArrayList<ChessMove> newMoves = validMoves(curPos);
-                    if (newMoves != null) {
-                        moves.addAll(newMoves);
+                //Makes sure piece is the same color and not the king (since we already checked it)
+                if (piece != null && piece.getTeamColor() == teamColor && piece.getPieceType() != ChessPiece.PieceType.KING) {
+                    //Valid moves will only add moves that make it so that the king is no longer in check
+                    ArrayList<ChessMove> moves = validMoves(curPos);
+                    //If there are any valid moves from this piece, the function can return
+                    if (!moves.isEmpty()) {
+                        return false;
                     }
                 }
             }
         }
-        return moves.isEmpty();
+        return true;
+    }
+
+    private boolean kingMoveOutOfCheck(TeamColor teamColor) {
+        //Does the same thing as noValidMoves, but just for the king since it is very likely the king can move (Improves efficiency)
+        ArrayList<ChessMove> kingMoves;
+        if (teamColor == TeamColor.WHITE) {
+            kingMoves = validMoves(whiteKingPos);
+        } else {
+            kingMoves = validMoves(blackKingPos);
+        }
+        return !kingMoves.isEmpty();
     }
 
     /**
@@ -224,17 +256,16 @@ public class ChessGame {
      */
     public void setBoard(ChessBoard board) {
         this.board = board;
+        //This loops through the board and finds where the kings are starting at
         for (int i=1; i<9; i++) {
             for (int j=1; j<9; j++) {
                 ChessPosition curPos = new ChessPosition(i, j);
                 ChessPiece curPiece = board.getPiece(curPos);
-                if (curPiece != null) {
-                    if (curPiece.getPieceType() == ChessPiece.PieceType.KING) {
-                        if (curPiece.getTeamColor() == TeamColor.WHITE) {
-                            whiteKingPos = curPos;
-                        } else {
-                            blackKingPos = curPos;
-                        }
+                if (curPiece != null && curPiece.getPieceType() == ChessPiece.PieceType.KING) {
+                    if (curPiece.getTeamColor() == TeamColor.WHITE) {
+                        whiteKingPos = curPos;
+                    } else {
+                        blackKingPos = curPos;
                     }
                 }
             }
