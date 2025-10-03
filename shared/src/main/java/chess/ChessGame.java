@@ -155,13 +155,20 @@ public class ChessGame {
                 if (piece != null && piece.getTeamColor() != teamColor) {
                     //Get all the moves that piece can make
                     Collection<ChessMove> pieceMoves = piece.pieceMoves(curBoard, curPos);
-                    for (ChessMove move : pieceMoves) {
-                        //If a move attacks the king, the king is in check
-                        if (move.getEndPosition().equals(kingPos)) {
-                            return true;
-                        }
+                    if (movesMakeCheck(pieceMoves, kingPos)) {
+                        return true;
                     }
                 }
+            }
+        }
+        return false;
+    }
+
+    private boolean movesMakeCheck(Collection<ChessMove> pieceMoves, ChessPosition kingPos) {
+        for (ChessMove move : pieceMoves) {
+            //If a move attacks the king, the king is in check
+            if (move.getEndPosition().equals(kingPos)) {
+                return true;
             }
         }
         return false;
