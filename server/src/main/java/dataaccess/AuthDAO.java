@@ -5,11 +5,11 @@ import model.AuthData;
 public class AuthDAO {
 
     public static AuthData createAuth() {
-        return new AuthData();
+        return new AuthData("","");
     }
 
     public static AuthData getAuth() {
-        return new AuthData();
+        return new AuthData("","");
     }
 
     public static void deleteAuth() {

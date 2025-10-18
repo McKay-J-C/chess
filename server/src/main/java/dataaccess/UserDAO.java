@@ -5,11 +5,11 @@ import model.UserData;
 public class UserDAO {
 
     public static UserData createUser() {
-        return new UserData();
+        return new UserData("", "", "");
     }
 
     public static UserData getUser(String username) {
-        return new UserData();
+        return new UserData("", "", "");
     }
 
     public static void clear() {
