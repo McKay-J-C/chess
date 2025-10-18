@@ -6,23 +6,23 @@ import java.util.ArrayList;
 
 public class GameDAO {
 
-    static GameData createGame() {
+    public static GameData createGame() {
         return new GameData();
     }
 
-    static GameData getGame(int gameID) {
+    public static GameData getGame(int gameID) {
         return new GameData();
     }
 
-    static ArrayList<GameData> listGames() {
+    public static ArrayList<GameData> listGames() {
         return new ArrayList<>();
     }
 
-    static void updateGame(int gameID) {
+    public static void updateGame(int gameID) {
 
     }
 
-    static void clear() {
+    public static void clear() {
 
     }
 }

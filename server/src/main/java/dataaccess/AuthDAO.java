@@ -4,19 +4,19 @@ import model.AuthData;
 
 public class AuthDAO {
 
-    static AuthData createAuth() {
+    public static AuthData createAuth() {
         return new AuthData();
     }
 
-    static AuthData getAuth() {
+    public static AuthData getAuth() {
         return new AuthData();
     }
 
-    static void deleteAuth() {
+    public static void deleteAuth() {
 
     }
 
-    static void clear() {
+    public static void clear() {
 
     }
 }

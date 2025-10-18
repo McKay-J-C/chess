@@ -4,15 +4,15 @@ import model.UserData;
 
 public class UserDAO {
 
-    static UserData createUser() {
+    public static UserData createUser() {
         return new UserData();
     }
 
-    static UserData getUser(String username) {
+    public static UserData getUser(String username) {
         return new UserData();
     }
 
-    static void clear() {
+    public static void clear() {
 
     }
 }
