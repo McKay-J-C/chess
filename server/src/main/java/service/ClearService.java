@@ -1,6 +1,6 @@
 package service;
 
-import dataaccess.GameDAO;
+import dataaccess.*;
 
 public class ClearService {
     public void clear() {

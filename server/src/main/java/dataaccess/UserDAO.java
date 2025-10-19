@@ -1,18 +1,19 @@
 package dataaccess;
 
+import model.AuthData;
 import model.UserData;
 
-public class UserDAO {
+public interface UserDAO {
 
-    public static UserData createUser() {
+    static AuthData createUser(String username, String password, String email) {
+        return new AuthData("", "");
+    }
+
+    static UserData getUser(String username) {
         return new UserData("", "", "");
     }
 
-    public static UserData getUser(String username) {
-        return new UserData("", "", "");
-    }
-
-    public static void clear() {
+    static void clear() {
 
     }
 }

@@ -1,19 +1,19 @@
 package service;
 
-import result.*;
+import response.*;
 import request.*;
 
 public class GameService {
 
-    public ListGamesResult listGames(ListGamesRequest listGamesRequest) {
-        return new ListGamesResult();
+    public ListGamesResponse listGames(ListGamesRequest listGamesRequest) {
+        return new ListGamesResponse("default");
     }
 
-    public CreateGameResult createGame(CreateGameRequest createGameRequest) {
-        return new CreateGameResult(1);
+    public CreateGameResponse createGame(CreateGameRequest createGameRequest) {
+        return new CreateGameResponse(1, "default");
     }
 
-    public JoinGameResult joinGame(JoinGameRequest logoutRequest) {
-        return new JoinGameResult();
+    public JoinGameResponse joinGame(JoinGameRequest logoutRequest) {
+        return new JoinGameResponse("default");
     }
 }

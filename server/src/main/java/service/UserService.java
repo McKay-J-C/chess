@@ -1,16 +1,28 @@
 package service;
 
-import result.*;
+import dataaccess.DataAccessException;
+import model.AuthData;
+import response.*;
 import request.*;
+import static dataaccess.MemUserDAO.*;
 
 public class UserService {
 
-    public RegisterResult register(RegisterRequest registerRequest) {
-        return new RegisterResult("","");
+    public static RegisterResponse register(RegisterRequest registerRequest) throws DataAccessException, AlreadyTakenException {
+        String username = registerRequest.username();
+        String password = registerRequest.password();
+        String email = registerRequest.email();
+
+//        if (username == null || password == null || email == null) {
+//            throw new BadRequestException("Error: bad request");
+//        }
+
+        AuthData userAuth = createUser(username, password, email);
+        return new RegisterResponse(userAuth.username(), userAuth.authToken(), null);
     }
 
-    public LoginResult login(LoginRequest loginRequest) {
-        return new LoginResult("", "");
+    public LoginResponse login(LoginRequest loginRequest) {
+        return new LoginResponse("", "", "default");
     }
 
     public void logout(LogoutRequest logoutRequest) {

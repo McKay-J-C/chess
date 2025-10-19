@@ -4,8 +4,11 @@ import chess.ChessGame;
 import model.GameData;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
-public interface GameDAO {
+public class MemGameDAO implements GameDAO {
+
+    HashSet<GameData> gameData;
 
     static GameData createGame() {
         return new GameData(1, "", "", "", new ChessGame());

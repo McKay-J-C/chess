@@ -2,21 +2,21 @@ package dataaccess;
 
 import model.AuthData;
 
-public class AuthDAO {
+public interface AuthDAO {
 
-    public static AuthData createAuth() {
-        return new AuthData("","");
+    static AuthData createAuth() {
+        return null;
     }
 
-    public static AuthData getAuth() {
-        return new AuthData("","");
+    static AuthData getAuth() {
+        return null;
     }
 
-    public static void deleteAuth() {
+    static void deleteAuth() {
 
     }
 
-    public static void clear() {
+    static void clear() {
 
     }
 }
