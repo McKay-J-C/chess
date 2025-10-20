@@ -2,12 +2,10 @@ package dataaccess;
 
 import model.AuthData;
 import model.UserData;
-import service.AlreadyTakenException;
 
 import java.util.HashSet;
 
 import static dataaccess.MemAuthDAO.createAuth;
-import static model.AuthData.generateToken;
 
 public class MemUserDAO implements UserDAO {
 
@@ -15,7 +13,7 @@ public class MemUserDAO implements UserDAO {
 
     public static AuthData createUser(String username, String password, String email) {
         if (getUser(username) != null) {
-            throw new AlreadyTakenException("Error: already taken");
+            throw new DataAccessException.AlreadyTakenException("Error: already taken");
         }
         userData.add(new UserData(username, password, email));
         return createAuth(username);

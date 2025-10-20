@@ -26,4 +26,16 @@ public class ServiceTests {
         AuthData testResponse = new AuthData("", "Bob");
         Assertions.assertEquals(testResponse.username(), foundResponse.username());
     }
+
+    @Test
+    @Order(2)
+    @DisplayName("Taken Username Error Registration")
+    public void usernameTakenRegistration() throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest(
+                "Bob", "goCougs27", "mjc2021@byu.edu");
+        register(registerRequest);
+        RegisterRequest newRegisterRequest = new RegisterRequest(
+                "Bob", "hello", "goBYU@byu.edu");
+        Assertions.assertThrows(DataAccessException.AlreadyTakenException.class, () -> register(newRegisterRequest));
+    }
 }

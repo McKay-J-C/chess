@@ -8,7 +8,7 @@ import static dataaccess.MemUserDAO.*;
 
 public class UserService {
 
-    public static RegisterResponse register(RegisterRequest registerRequest) throws DataAccessException, AlreadyTakenException {
+    public static RegisterResponse register(RegisterRequest registerRequest) throws DataAccessException, DataAccessException.AlreadyTakenException {
         String username = registerRequest.username();
         String password = registerRequest.password();
         String email = registerRequest.email();

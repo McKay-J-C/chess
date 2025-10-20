@@ -10,4 +10,10 @@ public class DataAccessException extends Exception {
     public DataAccessException(String message, Throwable ex) {
         super(message, ex);
     }
+
+    public static class AlreadyTakenException extends RuntimeException {
+        public AlreadyTakenException(String message) {
+            super(message);
+        }
+    }
 }
