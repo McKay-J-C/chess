@@ -113,10 +113,8 @@ public class ServiceTests {
     @DisplayName("Successful Game Creation")
     public void successfulCreateGame() throws Exception {
         RegisterResponse registerResponse = registerBob();
-        CreateGameRequest createGameRequest = new CreateGameRequest(
-                registerResponse.authToken(), "Bob's game");
-        CreateGameResponse createGameResponse1 = createGame(createGameRequest);
-        CreateGameResponse createGameResponse2 = createGame(createGameRequest);
+        CreateGameResponse createGameResponse1 = makeBobsGame(registerResponse);
+        CreateGameResponse createGameResponse2 = makeBobsGame(registerResponse);
 
         //Confirm games have unique IDs
         Assertions.assertNotEquals(createGameResponse2.gameID(), createGameResponse1.gameID());
@@ -133,9 +131,9 @@ public class ServiceTests {
     @DisplayName("Unauthorized Game Creation")
     public void unauthorizedCreateGame() throws Exception {
         registerBob();
-        CreateGameRequest createGameRequest = new CreateGameRequest("hi", "funny game");
+        CreateGameRequest createGameRequest = new CreateGameRequest("Bob's game");
         Assertions.assertThrows(DataAccessException.UnauthorizedException.class,
-                () -> createGame(createGameRequest));
+                () -> createGame("hi", createGameRequest));
     }
 
 
@@ -143,6 +141,11 @@ public class ServiceTests {
     static RegisterResponse registerBob() throws DataAccessException {
         return register(new RegisterRequest(
                 "Bob", "goCougs27", "mjc2021@byu.edu"));
+    }
+
+    static CreateGameResponse makeBobsGame(RegisterResponse registerResponse) throws DataAccessException {
+        CreateGameRequest createGameRequest = new CreateGameRequest("Bob's game");
+        return createGame(registerResponse.authToken(), createGameRequest);
     }
 
 }
