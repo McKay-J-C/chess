@@ -6,6 +6,7 @@ import io.javalin.*;
 import io.javalin.http.Context;
 import org.jetbrains.annotations.NotNull;
 import request.RegisterRequest;
+import response.ErrorResponse;
 import response.RegisterResponse;
 import service.BadRequestException;
 import service.UserService;
@@ -27,24 +28,29 @@ public class Server {
     }
 
     private void exceptionHandler(@NotNull Exception ex, @NotNull Context context) {
-        if (ex.getClass() ==  BadRequestException.class) {
+        if (ex instanceof BadRequestException) {
             context.status(400);
         }
-        else if (ex.getClass() == DataAccessException.AlreadyTakenException.class) {
+        else if (ex instanceof DataAccessException.AlreadyTakenException) {
             context.status(403);
         }
-        context.json(new Gson.toJson());
-
+        else {
+            context.status(500);
+        }
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
+        if (errorResponse.message() == null) {
+            errorResponse = new ErrorResponse("Error: unidentified error");
+        }
+        context.json(new Gson().toJson(errorResponse));
     }
 
-    private void register(@NotNull Context context) throws DataAccessException {
-        try {
-            RegisterRequest registerRequest = new Gson().fromJson(context.body(), RegisterRequest.class);
-            RegisterResponse registerResponse = service.UserService.register(registerRequest);
-            context.json(new Gson().toJson(registerResponse));
-        } catch {
+    private void register(@NotNull Context context) throws DataAccessException, BadRequestException {
+        RegisterRequest registerRequest = new Gson().fromJson(context.body(), RegisterRequest.class);
+        if (registerRequest.username() == null || registerRequest.password() == null || registerRequest.email() == null) {
             throw new BadRequestException("Error: bad request");
         }
+        RegisterResponse registerResponse = service.UserService.register(registerRequest);
+        context.json(new Gson().toJson(registerResponse));
     }
 
 
