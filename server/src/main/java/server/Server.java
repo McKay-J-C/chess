@@ -6,10 +6,7 @@ import io.javalin.*;
 import io.javalin.http.Context;
 import org.jetbrains.annotations.NotNull;
 
-import request.CreateGameRequest;
-import request.LoginRequest;
-import request.LogoutRequest;
-import request.RegisterRequest;
+import request.*;
 import response.*;
 import service.BadRequestException;
 
@@ -27,6 +24,7 @@ public class Server {
                 .post("/session", this::loginHandler)
                 .delete("/session", this::logoutHandler)
                 .post("/game", this::createGameHandler)
+                .get("/game", this::listGamesHandler)
                 .exception(Exception.class, this::exceptionHandler);
         // Register your endpoints and exception handlers here.
 
@@ -54,27 +52,27 @@ public class Server {
 
     private void registerHandler(@NotNull Context context) throws DataAccessException, BadRequestException {
         RegisterRequest registerRequest = new Gson().fromJson(context.body(), RegisterRequest.class);
-        if (registerRequest.username() == null || registerRequest.password() == null || registerRequest.email() == null) {
-            throw new BadRequestException("Error: bad request");
-        }
+        checkArg(registerRequest.username());
+        checkArg(registerRequest.password());
+        checkArg(registerRequest.email());
+
         RegisterResponse registerResponse = service.UserService.register(registerRequest);
         context.json(new Gson().toJson(registerResponse));
     }
 
     private void loginHandler(@NotNull Context context) throws DataAccessException, BadRequestException {
         LoginRequest loginRequest = new Gson().fromJson(context.body(), LoginRequest.class);
-        if (loginRequest.username() == null || loginRequest.password() == null) {
-            throw new BadRequestException("Error: bad request");
-        }
+        checkArg(loginRequest.username());
+        checkArg(loginRequest.password());
+
         LoginResponse loginResponse = service.UserService.login(loginRequest);
         context.json(new Gson().toJson(loginResponse));
     }
 
     private void logoutHandler(@NotNull Context context) throws DataAccessException, BadRequestException {
         LogoutRequest logoutRequest = new LogoutRequest(context.header("authorization"));
-        if (logoutRequest.authToken() == null) {
-            throw new BadRequestException("Error: bad request");
-        }
+        checkArg(logoutRequest.authToken());
+
         LogoutResponse logoutResponse = service.UserService.logout(logoutRequest);
         context.json(new Gson().toJson(logoutResponse));
     }
@@ -82,19 +80,24 @@ public class Server {
     private void createGameHandler(@NotNull Context context) throws DataAccessException, BadRequestException {
         String authToken = context.header("authorization");
         CreateGameRequest createGameRequest = new Gson().fromJson(context.body(), CreateGameRequest.class);
-        checkAuth(authToken);
-        if (createGameRequest.gameName() == null) {
-            throw new BadRequestException("Error: bad request");
-        }
+        checkArg(authToken);
+        checkArg(createGameRequest.gameName());
+
         CreateGameResponse createGameResponse = service.GameService.createGame(authToken, createGameRequest);
         context.json(new Gson().toJson(createGameResponse));
     }
 
+    private void listGamesHandler(@NotNull Context context) throws DataAccessException, BadRequestException {
+        ListGamesRequest listGamesRequest = new ListGamesRequest(context.header("authorization"));
+        checkArg(listGamesRequest.authToken());
 
+        ListGamesResponse listGamesResponse = service.GameService.listGames(listGamesRequest);
+        context.json(new Gson().toJson(listGamesResponse));
+    }
 
-    private void checkAuth(String authToken) {
-        if (authToken == null || authToken.isEmpty()) {
-            throw new DataAccessException.UnauthorizedException("Error: unauthorized");
+    private void checkArg(String arg) {
+        if (arg == null || arg.isEmpty()) {
+            throw new BadRequestException("Error: bad request");
         }
     }
 
