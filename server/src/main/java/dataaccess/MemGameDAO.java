@@ -27,8 +27,8 @@ public class MemGameDAO implements GameDAO {
         return null;
     }
 
-    public static ArrayList<GameData> listGames() {
-        return new ArrayList<>();
+    public static HashSet<GameData> getGames() {
+        return gameData;
     }
 
     public static void updateGame(int gameID) {
@@ -37,5 +37,6 @@ public class MemGameDAO implements GameDAO {
 
     public static void clear() {
         gameData = new HashSet<>();
+        curID = 1;
     }
 }

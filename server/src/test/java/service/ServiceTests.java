@@ -10,8 +10,11 @@ import org.junit.jupiter.api.*;
 import request.*;
 import response.*;
 
+import java.util.HashSet;
+
 import static dataaccess.MemAuthDAO.authorize;
 import static dataaccess.MemGameDAO.getGame;
+import static dataaccess.MemGameDAO.getGames;
 import static service.UserService.*;
 import static service.GameService.*;
 import static service.ClearService.clear;
@@ -112,9 +115,9 @@ public class ServiceTests {
     @Order(8)
     @DisplayName("Successful Game Creation")
     public void successfulCreateGame() throws Exception {
-        RegisterResponse registerResponse = registerBob();
-        CreateGameResponse createGameResponse1 = makeBobsGame(registerResponse);
-        CreateGameResponse createGameResponse2 = makeBobsGame(registerResponse);
+        String authToken = registerBob().authToken();
+        CreateGameResponse createGameResponse1 = makeBobsGame(authToken);
+        CreateGameResponse createGameResponse2 = makeBobsGame(authToken);
 
         //Confirm games have unique IDs
         Assertions.assertNotEquals(createGameResponse2.gameID(), createGameResponse1.gameID());
@@ -136,16 +139,41 @@ public class ServiceTests {
                 () -> createGame("hi", createGameRequest));
     }
 
+    @Test
+    @Order(10)
+    @DisplayName("Successful List Games")
+    public void successfulListGames() throws Exception {
+        String authToken = registerBob().authToken();
+        ListGamesRequest listGamesRequest = new ListGamesRequest(authToken);
+        ListGamesResponse listGamesResponse = listGames(listGamesRequest);
+        Assertions.assertEquals(new HashSet<>(), listGamesResponse.games());
 
+        makeBobsGame(authToken);
+        HashSet<GameData> testGameData = new HashSet<>();
+        GameData testGame = new GameData(
+                1, null, null, "Bob's game", new ChessGame());
+        testGameData.add(testGame);
+        Assertions.assertEquals(new ListGamesResponse(testGameData, null), listGamesResponse);
+    }
+
+    @Test
+    @Order(11)
+    @DisplayName("Unauthorized List Games")
+    public void unauthorizedListGames() throws Exception {
+        registerBob();
+        ListGamesRequest listGamesRequest = new ListGamesRequest("hi");
+        Assertions.assertThrows(DataAccessException.UnauthorizedException.class,
+                () -> listGames(listGamesRequest));
+    }
 
     static RegisterResponse registerBob() throws DataAccessException {
         return register(new RegisterRequest(
                 "Bob", "goCougs27", "mjc2021@byu.edu"));
     }
 
-    static CreateGameResponse makeBobsGame(RegisterResponse registerResponse) throws DataAccessException {
+    static CreateGameResponse makeBobsGame(String authToken) throws DataAccessException {
         CreateGameRequest createGameRequest = new CreateGameRequest("Bob's game");
-        return createGame(registerResponse.authToken(), createGameRequest);
+        return createGame(authToken, createGameRequest);
     }
 
 }
