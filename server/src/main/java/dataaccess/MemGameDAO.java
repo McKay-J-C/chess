@@ -9,20 +9,29 @@ import java.util.HashSet;
 public class MemGameDAO implements GameDAO {
 
     static HashSet<GameData> gameData = new HashSet<>();
+    static int curID = 1;
 
-    static GameData createGame() {
-        return new GameData(1, "", "", "", new ChessGame());
+    public static int addGame(String gameName) {
+        GameData game = new GameData(curID, null, null, gameName, new ChessGame());
+        curID++;
+        gameData.add(game);
+        return game.gameID();
     }
 
-    static GameData getGame(int gameID) {
-        return new GameData(1, "", "", "", new ChessGame());
+    public static GameData getGame(int gameID) {
+        for (GameData game : gameData) {
+            if (game.gameID() == gameID) {
+                return game;
+            }
+        }
+        return null;
     }
 
-    static ArrayList<GameData> listGames() {
+    public static ArrayList<GameData> listGames() {
         return new ArrayList<>();
     }
 
-    static void updateGame(int gameID) {
+    public static void updateGame(int gameID) {
 
     }
 

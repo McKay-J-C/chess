@@ -22,7 +22,7 @@ public interface AuthDAO {
 
     }
 
-    static AuthData authorize() {
-        return null;
-    }
+//    static AuthData authorize() {
+//        return null;
+//    }
 }

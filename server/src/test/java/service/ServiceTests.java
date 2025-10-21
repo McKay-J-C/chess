@@ -1,6 +1,7 @@
 package service;
 
 
+import chess.ChessGame;
 import dataaccess.MemUserDAO;
 import dataaccess.*;
 import model.*;
@@ -10,7 +11,9 @@ import request.*;
 import response.*;
 
 import static dataaccess.MemAuthDAO.authorize;
+import static dataaccess.MemGameDAO.getGame;
 import static service.UserService.*;
+import static service.GameService.*;
 import static service.ClearService.clear;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -55,8 +58,8 @@ public class ServiceTests {
         LoginResponse foundResponse = login(loginRequest);
         LoginResponse testResponse = new LoginResponse("Bob", "4", null);
 
-        Assertions.assertEquals(foundResponse.username(), testResponse.username());
-        Assertions.assertEquals(foundResponse.message(), testResponse.message());
+        Assertions.assertEquals(testResponse.username(), foundResponse.username());
+        Assertions.assertEquals(testResponse.message(), foundResponse.message());
         Assertions.assertNotNull(foundResponse.authToken());
     }
 
@@ -105,8 +108,41 @@ public class ServiceTests {
                 () -> logout(logoutRequest));
     }
 
+    @Test
+    @Order(8)
+    @DisplayName("Successful Game Creation")
+    public void successfulCreateGame() throws Exception {
+        RegisterResponse registerResponse = registerBob();
+        CreateGameRequest createGameRequest = new CreateGameRequest(
+                registerResponse.authToken(), "Bob's game");
+        CreateGameResponse createGameResponse1 = createGame(createGameRequest);
+        CreateGameResponse createGameResponse2 = createGame(createGameRequest);
+
+        //Confirm games have unique IDs
+        Assertions.assertNotEquals(createGameResponse2.gameID(), createGameResponse1.gameID());
+        GameData gameData = getGame(1);
+        GameData expectedGameData1 = new GameData(
+                1, null, null, "Bob's game", new ChessGame());
+
+        //Confirm correct creation of game
+        Assertions.assertEquals(expectedGameData1, gameData);
+    }
+
+    @Test
+    @Order(9)
+    @DisplayName("Unauthorized Game Creation")
+    public void unauthorizedCreateGame() throws Exception {
+        registerBob();
+        CreateGameRequest createGameRequest = new CreateGameRequest("hi", "funny game");
+        Assertions.assertThrows(DataAccessException.UnauthorizedException.class,
+                () -> createGame(createGameRequest));
+    }
+
+
+
     static RegisterResponse registerBob() throws DataAccessException {
         return register(new RegisterRequest(
                 "Bob", "goCougs27", "mjc2021@byu.edu"));
     }
+
 }

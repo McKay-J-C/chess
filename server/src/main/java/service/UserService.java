@@ -34,7 +34,7 @@ public class UserService {
         if (user == null) {
             throw new DataAccessException.UnauthorizedException("Error: username not found");
         }
-        if (!Objects.equals(user.password(), password)) {
+        if (!user.password().equals(password)) {
             throw new DataAccessException.UnauthorizedException("Error: incorrect password");
         }
 

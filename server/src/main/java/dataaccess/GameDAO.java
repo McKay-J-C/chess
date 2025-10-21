@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public interface GameDAO {
 
-    static GameData createGame() {
+    static GameData addGame() {
         return new GameData(1, "", "", "", new ChessGame());
     }
 
