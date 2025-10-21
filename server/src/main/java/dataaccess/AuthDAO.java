@@ -2,6 +2,8 @@ package dataaccess;
 
 import model.AuthData;
 
+import static dataaccess.MemAuthDAO.getAuth;
+
 public interface AuthDAO {
 
     static AuthData createAuth() {
@@ -18,5 +20,9 @@ public interface AuthDAO {
 
     static void clear() {
 
+    }
+
+    static AuthData authorize() {
+        return null;
     }
 }

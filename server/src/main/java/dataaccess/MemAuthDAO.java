@@ -9,22 +9,35 @@ public class MemAuthDAO implements AuthDAO {
 
     static HashSet<AuthData> authData = new HashSet<>();
 
-    static AuthData createAuth(String username) {
+    public static AuthData createAuth(String username) {
         String token = generateToken();
         AuthData auth = new AuthData(token, username);
         authData.add(auth);
         return auth;
     }
 
-    static AuthData getAuth() {
+    public static AuthData getAuth(String authToken) {
+        for (AuthData auth : authData) {
+            if (auth.authToken().equals(authToken)) {
+                return auth;
+            }
+        }
         return null;
     }
 
-    static void deleteAuth() {
-
+    public static void deleteAuth(AuthData auth) {
+        authData.remove(auth);
     }
 
-    static void clear() {
+    public static void clear() {
+        authData = new HashSet<>();
+    }
 
+    public static AuthData authorize(String authToken) throws DataAccessException {
+        AuthData authData = MemAuthDAO.getAuth(authToken);
+        if (authData == null) {
+            throw new DataAccessException.UnauthorizedException("Error: unauthorized");
+        }
+        return authData;
     }
 }

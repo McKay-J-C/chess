@@ -8,7 +8,7 @@ import java.util.HashSet;
 
 public class MemGameDAO implements GameDAO {
 
-    HashSet<GameData> gameData;
+    static HashSet<GameData> gameData = new HashSet<>();
 
     static GameData createGame() {
         return new GameData(1, "", "", "", new ChessGame());
@@ -26,7 +26,7 @@ public class MemGameDAO implements GameDAO {
 
     }
 
-    static void clear() {
-
+    public static void clear() {
+        gameData = new HashSet<>();
     }
 }
