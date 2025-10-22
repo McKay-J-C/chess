@@ -25,6 +25,8 @@ public class Server {
                 .delete("/session", this::logoutHandler)
                 .post("/game", this::createGameHandler)
                 .get("/game", this::listGamesHandler)
+                .put("/game", this::joinGameHandler)
+
                 .exception(Exception.class, this::exceptionHandler);
         // Register your endpoints and exception handlers here.
 
@@ -95,10 +97,19 @@ public class Server {
         context.json(new Gson().toJson(listGamesResponse));
     }
 
+    private void joinGameHandler(@NotNull Context context) throws DataAccessException, BadRequestException {
+        String authToken = context.header("authorization");
+        JoinGameRequest joinGameRequest = new Gson().fromJson(context.body(), JoinGameRequest.class);
+        checkAuth(authToken);
+        checkArg(joinGameRequest.playerColor());
+        checkArg(String.valueOf(joinGameRequest.gameID()));
 
+        JoinGameResponse joinGameResponse = service.GameService.joinGame(authToken, joinGameRequest);
+        context.json(new Gson().toJson(joinGameResponse));
+    }
 
     private void checkArg(String arg) {
-        if (arg == null || arg.isEmpty()) {
+        if (arg == null || arg.isEmpty() || arg.equals("null")) {
             throw new BadRequestException("Error: bad request");
         }
     }
