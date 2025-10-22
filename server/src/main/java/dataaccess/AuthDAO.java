@@ -15,14 +15,9 @@ public interface AuthDAO {
     }
 
     static void deleteAuth() {
-
     }
 
     static void clear() {
-
     }
 
-//    static AuthData authorize() {
-//        return null;
-//    }
 }

@@ -3,7 +3,6 @@ package dataaccess;
 import chess.ChessGame;
 import model.GameData;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 
 public class MemGameDAO implements GameDAO {

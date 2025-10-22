@@ -2,7 +2,6 @@ package service;
 
 import chess.ChessGame;
 import dataaccess.DataAccessException;
-import dataaccess.MemGameDAO;
 import model.AuthData;
 import model.GameData;
 import response.*;
@@ -10,7 +9,6 @@ import request.*;
 import dataaccess.MemGameDAO.*;
 
 import java.util.HashSet;
-import java.util.Objects;
 
 import static dataaccess.MemAuthDAO.authorize;
 import static dataaccess.MemGameDAO.*;
