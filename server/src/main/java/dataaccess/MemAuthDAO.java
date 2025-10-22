@@ -1,6 +1,8 @@
 package dataaccess;
 
 import model.AuthData;
+import model.UserData;
+
 import java.util.HashSet;
 
 import static model.AuthData.generateToken;
@@ -38,6 +40,10 @@ public class MemAuthDAO implements AuthDAO {
         if (authData == null) {
             throw new DataAccessException.UnauthorizedException("Error: unauthorized");
         }
+        return authData;
+    }
+
+    public static HashSet<AuthData> getAuths() {
         return authData;
     }
 }

@@ -71,7 +71,7 @@ public class Server {
 
     private void logoutHandler(@NotNull Context context) throws DataAccessException, BadRequestException {
         LogoutRequest logoutRequest = new LogoutRequest(context.header("authorization"));
-        checkArg(logoutRequest.authToken());
+        checkAuth(logoutRequest.authToken());
 
         LogoutResponse logoutResponse = service.UserService.logout(logoutRequest);
         context.json(new Gson().toJson(logoutResponse));
@@ -80,7 +80,7 @@ public class Server {
     private void createGameHandler(@NotNull Context context) throws DataAccessException, BadRequestException {
         String authToken = context.header("authorization");
         CreateGameRequest createGameRequest = new Gson().fromJson(context.body(), CreateGameRequest.class);
-        checkArg(authToken);
+        checkAuth(authToken);
         checkArg(createGameRequest.gameName());
 
         CreateGameResponse createGameResponse = service.GameService.createGame(authToken, createGameRequest);
@@ -89,15 +89,23 @@ public class Server {
 
     private void listGamesHandler(@NotNull Context context) throws DataAccessException, BadRequestException {
         ListGamesRequest listGamesRequest = new ListGamesRequest(context.header("authorization"));
-        checkArg(listGamesRequest.authToken());
+        checkAuth(listGamesRequest.authToken());
 
         ListGamesResponse listGamesResponse = service.GameService.listGames(listGamesRequest);
         context.json(new Gson().toJson(listGamesResponse));
     }
 
+
+
     private void checkArg(String arg) {
         if (arg == null || arg.isEmpty()) {
             throw new BadRequestException("Error: bad request");
+        }
+    }
+
+    private void checkAuth(String auth) {
+        if (auth == null || auth.isEmpty()) {
+            throw new BadRequestException("Error: unauthorized");
         }
     }
 

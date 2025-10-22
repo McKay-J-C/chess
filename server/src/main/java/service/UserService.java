@@ -6,8 +6,6 @@ import model.UserData;
 import response.*;
 import request.*;
 
-import java.util.Objects;
-
 import static dataaccess.MemAuthDAO.*;
 import static dataaccess.MemUserDAO.*;
 
@@ -17,10 +15,6 @@ public class UserService {
         String username = registerRequest.username();
         String password = registerRequest.password();
         String email = registerRequest.email();
-
-//        if (username == null || password == null || email == null) {
-//            throw new BadRequestException("Error: bad request");
-//        }
 
         AuthData userAuth = createUser(username, password, email);
         return new RegisterResponse(userAuth.username(), userAuth.authToken(), null);

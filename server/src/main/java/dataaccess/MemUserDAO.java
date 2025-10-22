@@ -34,4 +34,8 @@ public class MemUserDAO implements UserDAO {
     public static void clear() {
         userData = new HashSet<>();
     }
+
+    public static HashSet<UserData> getUsers() {
+        return userData;
+    }
 }

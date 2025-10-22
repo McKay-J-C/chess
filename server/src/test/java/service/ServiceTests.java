@@ -2,7 +2,6 @@ package service;
 
 
 import chess.ChessGame;
-import dataaccess.MemUserDAO;
 import dataaccess.*;
 import model.*;
 import org.eclipse.jetty.server.Authentication;
@@ -12,12 +11,11 @@ import response.*;
 
 import java.util.HashSet;
 
-import static dataaccess.MemAuthDAO.authorize;
-import static dataaccess.MemGameDAO.getGame;
-import static dataaccess.MemGameDAO.getGames;
+import static dataaccess.MemAuthDAO.*;
+import static dataaccess.MemGameDAO.*;
+import static dataaccess.MemUserDAO.*;
 import static service.UserService.*;
 import static service.GameService.*;
-import static service.ClearService.clear;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ServiceTests {
@@ -164,6 +162,72 @@ public class ServiceTests {
         ListGamesRequest listGamesRequest = new ListGamesRequest("hi");
         Assertions.assertThrows(DataAccessException.UnauthorizedException.class,
                 () -> listGames(listGamesRequest));
+    }
+
+    @Test
+    @Order(12)
+    @DisplayName("Successful Join Game")
+    public void successfulJoinGame() throws Exception {
+        JoinGameResponse joinGameResponse = registerMakeAndJoinGame();
+        GameData gameData = getGame(1);
+        Assertions.assertNotNull(gameData);
+        Assertions.assertEquals("Bob", gameData.whiteUsername());
+        Assertions.assertNull(joinGameResponse.message());
+    }
+
+    @Test
+    @Order(13)
+    @DisplayName("Unauthorized Join Game")
+    public void unauthorizedJoinGame() throws Exception {
+        registerMakeAndJoinGame();
+        JoinGameRequest joinGameRequest = new JoinGameRequest("BLACK", 1);
+        Assertions.assertThrows(DataAccessException.UnauthorizedException.class,
+                () -> joinGame("hi", joinGameRequest));
+    }
+
+    @Test
+    @Order(14)
+    @DisplayName("No Game Join Game")
+    public void noGameJoinGame() throws Exception {
+        String authToken = registerBob().authToken();
+        makeBobsGame(authToken);
+        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", 2);
+        Assertions.assertThrows(BadRequestException.class,
+                () -> joinGame(authToken, joinGameRequest));
+    }
+
+    @Test
+    @Order(15)
+    @DisplayName("Already Taken Join Game")
+    public void alreadyTakenJoinGame() throws Exception {
+        String authToken = registerBob().authToken();
+        makeBobsGame(authToken);
+        joinBobsGame(authToken);
+
+        Assertions.assertThrows(DataAccessException.AlreadyTakenException.class,
+                () -> joinBobsGame(authToken));
+    }
+
+    @Test
+    @Order(16)
+    @DisplayName("Successful Clear")
+    public void successfulClear() throws Exception {
+        registerMakeAndJoinGame();
+        ClearService.clear();
+        assert(getGames().isEmpty());
+        assert(getUsers().isEmpty());
+        assert(getAuths().isEmpty());
+    }
+
+    static JoinGameResponse registerMakeAndJoinGame() throws DataAccessException {
+        String authToken = registerBob().authToken();
+        makeBobsGame(authToken);
+        return joinBobsGame(authToken);
+    }
+
+    static JoinGameResponse joinBobsGame(String authToken) throws DataAccessException, BadRequestException {
+        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", 1);
+        return joinGame(authToken, joinGameRequest);
     }
 
     static RegisterResponse registerBob() throws DataAccessException {

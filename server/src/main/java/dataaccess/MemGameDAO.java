@@ -31,8 +31,19 @@ public class MemGameDAO implements GameDAO {
         return gameData;
     }
 
-    public static void updateGame(int gameID) {
-
+    public static void updateGame(int gameID, ChessGame.TeamColor teamColor, String username) {
+        for (GameData game : gameData) {
+            if (game.gameID() == gameID) {
+                gameData.remove(game);
+                GameData newGame;
+                if (teamColor == ChessGame.TeamColor.WHITE) {
+                    newGame = new GameData(gameID, username, null, game.gameName(), game.game());
+                } else {
+                    newGame = new GameData(gameID, null, username, game.gameName(), game.game());
+                }
+                gameData.add(newGame);
+            }
+        }
     }
 
     public static void clear() {
