@@ -4,11 +4,10 @@ package service;
 import chess.ChessGame;
 import dataaccess.*;
 import model.*;
-import org.eclipse.jetty.server.Authentication;
-import org.junit.jupiter.api.*;
 import request.*;
 import response.*;
 
+import org.junit.jupiter.api.*;
 import java.util.HashSet;
 
 import static dataaccess.MemAuthDAO.*;
@@ -67,7 +66,7 @@ public class ServiceTests {
     @Test
     @Order(4)
     @DisplayName("Username Not Found Login")
-    public void usernameNotFoundLogin() throws Exception {
+    public void usernameNotFoundLogin() {
         LoginRequest loginRequest = new LoginRequest("Bob", "hi");
         Assertions.assertThrows(DataAccessException.UnauthorizedException.class,
                 () -> login(loginRequest));

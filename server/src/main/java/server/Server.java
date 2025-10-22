@@ -29,17 +29,11 @@ public class Server {
     }
 
     private void exceptionHandler(@NotNull Exception ex, @NotNull Context context) {
-        if (ex instanceof BadRequestException) {
-            context.status(400);
-        }
-        else if (ex instanceof DataAccessException.UnauthorizedException) {
-            context.status(401);
-        }
-        else if (ex instanceof DataAccessException.AlreadyTakenException) {
-            context.status(403);
-        }
-        else {
-            context.status(500);
+        switch (ex) {
+            case BadRequestException badRequestException -> context.status(400);
+            case DataAccessException.UnauthorizedException unauthorizedException -> context.status(401);
+            case DataAccessException.AlreadyTakenException alreadyTakenException -> context.status(403);
+            default -> context.status(500);
         }
         ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
         if (errorResponse.message() == null) {
@@ -58,7 +52,7 @@ public class Server {
         context.json(new Gson().toJson(registerResponse));
     }
 
-    private void loginHandler(@NotNull Context context) throws DataAccessException, BadRequestException {
+    private void loginHandler(@NotNull Context context) throws BadRequestException {
         LoginRequest loginRequest = new Gson().fromJson(context.body(), LoginRequest.class);
         checkArg(loginRequest.username());
         checkArg(loginRequest.password());
