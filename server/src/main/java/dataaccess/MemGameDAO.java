@@ -37,9 +37,9 @@ public class MemGameDAO implements GameDAO {
                 gameData.remove(game);
                 GameData newGame;
                 if (teamColor == ChessGame.TeamColor.WHITE) {
-                    newGame = new GameData(gameID, username, null, game.gameName(), game.game());
+                    newGame = new GameData(gameID, username, game.blackUsername(), game.gameName(), game.game());
                 } else {
-                    newGame = new GameData(gameID, null, username, game.gameName(), game.game());
+                    newGame = new GameData(gameID, game.whiteUsername(), username, game.gameName(), game.game());
                 }
                 gameData.add(newGame);
             }

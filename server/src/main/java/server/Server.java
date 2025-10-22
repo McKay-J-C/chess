@@ -10,8 +10,6 @@ import request.*;
 import response.*;
 import service.BadRequestException;
 
-import static dataaccess.MemAuthDAO.authorize;
-
 
 public class Server {
 
@@ -26,10 +24,8 @@ public class Server {
                 .post("/game", this::createGameHandler)
                 .get("/game", this::listGamesHandler)
                 .put("/game", this::joinGameHandler)
-
+                .delete("/db", this::clearHandler)
                 .exception(Exception.class, this::exceptionHandler);
-        // Register your endpoints and exception handlers here.
-
     }
 
     private void exceptionHandler(@NotNull Exception ex, @NotNull Context context) {
@@ -106,6 +102,11 @@ public class Server {
 
         JoinGameResponse joinGameResponse = service.GameService.joinGame(authToken, joinGameRequest);
         context.json(new Gson().toJson(joinGameResponse));
+    }
+
+    private void clearHandler(@NotNull Context context) {
+        ClearResponse clearResponse = service.ClearService.clear();
+        context.json(new Gson().toJson(clearResponse));
     }
 
     private void checkArg(String arg) {

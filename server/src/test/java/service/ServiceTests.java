@@ -177,6 +177,23 @@ public class ServiceTests {
 
     @Test
     @Order(13)
+    @DisplayName("Successful Join Game")
+    public void successfulJoinGameOtherColor() throws Exception {
+        String authToken = registerBob().authToken();
+        makeBobsGame(authToken);
+        JoinGameResponse joinGameResponse1 = joinBobsGame(authToken, "WHITE");
+        JoinGameResponse joinGameResponse2 = joinBobsGame(authToken, "BLACK");
+        GameData gameData = getGame(1);
+
+        Assertions.assertNotNull(gameData);
+        Assertions.assertEquals("Bob", gameData.whiteUsername());
+        Assertions.assertEquals("Bob", gameData.blackUsername());
+        Assertions.assertNull(joinGameResponse1.message());
+        Assertions.assertNull(joinGameResponse2.message());
+    }
+
+    @Test
+    @Order(14)
     @DisplayName("Unauthorized Join Game")
     public void unauthorizedJoinGame() throws Exception {
         registerMakeAndJoinGame();
@@ -186,7 +203,7 @@ public class ServiceTests {
     }
 
     @Test
-    @Order(14)
+    @Order(15)
     @DisplayName("No Game Join Game")
     public void noGameJoinGame() throws Exception {
         String authToken = registerBob().authToken();
@@ -197,19 +214,19 @@ public class ServiceTests {
     }
 
     @Test
-    @Order(15)
+    @Order(16)
     @DisplayName("Already Taken Join Game")
     public void alreadyTakenJoinGame() throws Exception {
         String authToken = registerBob().authToken();
         makeBobsGame(authToken);
-        joinBobsGame(authToken);
+        joinBobsGame(authToken, "WHITE");
 
         Assertions.assertThrows(DataAccessException.AlreadyTakenException.class,
-                () -> joinBobsGame(authToken));
+                () -> joinBobsGame(authToken, "WHITE"));
     }
 
     @Test
-    @Order(16)
+    @Order(17)
     @DisplayName("Successful Clear")
     public void successfulClear() throws Exception {
         registerMakeAndJoinGame();
@@ -222,11 +239,11 @@ public class ServiceTests {
     static JoinGameResponse registerMakeAndJoinGame() throws DataAccessException {
         String authToken = registerBob().authToken();
         makeBobsGame(authToken);
-        return joinBobsGame(authToken);
+        return joinBobsGame(authToken, "WHITE");
     }
 
-    static JoinGameResponse joinBobsGame(String authToken) throws DataAccessException, BadRequestException {
-        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", 1);
+    static JoinGameResponse joinBobsGame(String authToken, String color) throws DataAccessException, BadRequestException {
+        JoinGameRequest joinGameRequest = new JoinGameRequest(color, 1);
         return joinGame(authToken, joinGameRequest);
     }
 
