@@ -2,22 +2,34 @@ package dataaccess;
 
 import model.AuthData;
 
-import static dataaccess.MemAuthDAO.getAuth;
+import java.util.HashSet;
+
 
 public interface AuthDAO {
 
-    static AuthData createAuth() {
+    default AuthData createAuth(String username) {
         return null;
     }
 
-    static AuthData getAuth() {
+    default AuthData getAuth(String authToken) {
         return null;
     }
 
-    static void deleteAuth() {
+    default void deleteAuth(AuthData auth) {
     }
 
-    static void clear() {
+    default AuthData authorize(String authToken) throws DataAccessException {
+        AuthData authData = this.getAuth(authToken);
+        if (authData == null) {
+            throw new DataAccessException.UnauthorizedException("Error: unauthorized");
+        }
+        return authData;
     }
 
+    default void clear() {
+    }
+
+    default HashSet<AuthData> getAuths() {
+        return null;
+    }
 }

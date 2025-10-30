@@ -1,7 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
-import dataaccess.DataAccessException;
+import dataaccess.*;
 import io.javalin.*;
 import io.javalin.http.Context;
 import org.jetbrains.annotations.NotNull;
@@ -9,18 +9,31 @@ import org.jetbrains.annotations.NotNull;
 import request.*;
 import response.*;
 import service.BadRequestException;
+import service.ClearService;
+import service.GameService;
+import service.UserService;
 
 
 public class Server {
 
     private final Javalin javalin;
-
-//    public Server() {
-//
-//    }
-
+    private final ClearService clearService;
+    private final GameService gameService;
+    private final UserService userService;
 
     public Server() {
+        this(new ClearService(new MemAuthDAO(), new MemGameDAO(), new MemUserDAO()),
+                new GameService(new MemGameDAO(), new MemAuthDAO()),
+                new UserService(new MemUserDAO(), new MemAuthDAO() {
+                }));
+    }
+
+
+    public Server(ClearService clearService, GameService gameService, UserService userService) {
+        this.clearService = clearService;
+        this.gameService = gameService;
+        this.userService = userService;
+
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
                 .post("/user", this::registerHandler)
                 .post("/session", this::loginHandler)
@@ -52,7 +65,7 @@ public class Server {
         checkArg(registerRequest.password());
         checkArg(registerRequest.email());
 
-        RegisterResponse registerResponse = service.UserService.register(registerRequest);
+        RegisterResponse registerResponse = userService.register(registerRequest);
         context.json(new Gson().toJson(registerResponse));
     }
 
@@ -61,7 +74,7 @@ public class Server {
         checkArg(loginRequest.username());
         checkArg(loginRequest.password());
 
-        LoginResponse loginResponse = service.UserService.login(loginRequest);
+        LoginResponse loginResponse = userService.login(loginRequest);
         context.json(new Gson().toJson(loginResponse));
     }
 
@@ -69,7 +82,7 @@ public class Server {
         LogoutRequest logoutRequest = new LogoutRequest(context.header("authorization"));
         checkAuth(logoutRequest.authToken());
 
-        LogoutResponse logoutResponse = service.UserService.logout(logoutRequest);
+        LogoutResponse logoutResponse = userService.logout(logoutRequest);
         context.json(new Gson().toJson(logoutResponse));
     }
 
@@ -79,7 +92,7 @@ public class Server {
         checkAuth(authToken);
         checkArg(createGameRequest.gameName());
 
-        CreateGameResponse createGameResponse = service.GameService.createGame(authToken, createGameRequest);
+        CreateGameResponse createGameResponse = gameService.createGame(authToken, createGameRequest);
         context.json(new Gson().toJson(createGameResponse));
     }
 
@@ -87,7 +100,7 @@ public class Server {
         ListGamesRequest listGamesRequest = new ListGamesRequest(context.header("authorization"));
         checkAuth(listGamesRequest.authToken());
 
-        ListGamesResponse listGamesResponse = service.GameService.listGames(listGamesRequest);
+        ListGamesResponse listGamesResponse = gameService.listGames(listGamesRequest);
         context.json(new Gson().toJson(listGamesResponse));
     }
 
@@ -98,12 +111,12 @@ public class Server {
         checkArg(joinGameRequest.playerColor());
         checkArg(String.valueOf(joinGameRequest.gameID()));
 
-        JoinGameResponse joinGameResponse = service.GameService.joinGame(authToken, joinGameRequest);
+        JoinGameResponse joinGameResponse = gameService.joinGame(authToken, joinGameRequest);
         context.json(new Gson().toJson(joinGameResponse));
     }
 
     private void clearHandler(@NotNull Context context) {
-        ClearResponse clearResponse = service.ClearService.clear();
+        ClearResponse clearResponse = clearService.clear();
         context.json(new Gson().toJson(clearResponse));
     }
 

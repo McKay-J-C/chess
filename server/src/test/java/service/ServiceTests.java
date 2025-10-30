@@ -6,22 +6,27 @@ import dataaccess.*;
 import model.*;
 import request.*;
 import response.*;
+import dataaccess.UserDAO;
+import dataaccess.AuthDAO;
+import dataaccess.GameDAO;
 
 import org.junit.jupiter.api.*;
 import java.util.HashSet;
 
-import static dataaccess.MemAuthDAO.*;
-import static dataaccess.MemGameDAO.*;
-import static dataaccess.MemUserDAO.*;
-import static service.UserService.*;
-import static service.GameService.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ServiceTests {
 
+    ClearService clearService = new ClearService(new MemAuthDAO(), new MemGameDAO(), new MemUserDAO());
+    GameService gameService = new GameService(new MemGameDAO(), new MemAuthDAO());
+    UserService userService = new UserService(new MemUserDAO(), new MemAuthDAO());
+    UserDAO userDAO = new MemUserDAO();
+    GameDAO gameDAO = new MemGameDAO();
+    AuthDAO authDAO = new MemAuthDAO();
+
     @AfterEach
     public void clear() {
-        ClearService.clear();
+        clearService.clear();
     }
 
     @Test
@@ -29,7 +34,7 @@ public class ServiceTests {
     @DisplayName("Successful Registration")
     public void successfulRegistration() throws Exception {
         RegisterResponse foundResponse =  registerBob();
-        UserData foundUser = MemUserDAO.getUser("Bob");
+        UserData foundUser = userDAO.getUser("Bob");
         UserData testUser = new UserData("Bob", "goCougs27", "mjc2021@byu.edu");
         Assertions.assertEquals(testUser, foundUser);
 
@@ -45,7 +50,7 @@ public class ServiceTests {
         RegisterRequest newRegisterRequest = new RegisterRequest(
                 "Bob", "hello", "goBYU@byu.edu");
         Assertions.assertThrows(DataAccessException.AlreadyTakenException.class,
-                () -> register(newRegisterRequest));
+                () -> userService.register(newRegisterRequest));
     }
 
     @Test
@@ -55,7 +60,7 @@ public class ServiceTests {
         registerBob();
 
         LoginRequest loginRequest = new LoginRequest("Bob", "goCougs27");
-        LoginResponse foundResponse = login(loginRequest);
+        LoginResponse foundResponse = userService.login(loginRequest);
         LoginResponse testResponse = new LoginResponse("Bob", "4", null);
 
         Assertions.assertEquals(testResponse.username(), foundResponse.username());
@@ -69,7 +74,7 @@ public class ServiceTests {
     public void usernameNotFoundLogin() {
         LoginRequest loginRequest = new LoginRequest("Bob", "hi");
         Assertions.assertThrows(DataAccessException.UnauthorizedException.class,
-                () -> login(loginRequest));
+                () -> userService.login(loginRequest));
     }
 
     @Test
@@ -80,7 +85,7 @@ public class ServiceTests {
         LoginRequest loginRequest = new LoginRequest("Bob", "hi");
 
         Assertions.assertThrows(DataAccessException.UnauthorizedException.class,
-                () -> login(loginRequest));
+                () -> userService.login(loginRequest));
     }
 
     @Test
@@ -90,12 +95,12 @@ public class ServiceTests {
         String authToken = registerBob().authToken();
         LogoutRequest logoutRequest = new LogoutRequest(authToken);
 
-        LogoutResponse logoutResponse = logout(logoutRequest);
+        LogoutResponse logoutResponse = userService.logout(logoutRequest);
 
         Assertions.assertNull(logoutResponse.message());
         //Make sure authorization is deleted
         Assertions.assertThrows(DataAccessException.UnauthorizedException.class,
-                () -> authorize(authToken));
+                () -> authDAO.authorize(authToken));
     }
 
     @Test
@@ -105,7 +110,7 @@ public class ServiceTests {
         registerBob();
         LogoutRequest logoutRequest = new LogoutRequest("hi");
         Assertions.assertThrows(DataAccessException.UnauthorizedException.class,
-                () -> logout(logoutRequest));
+                () -> userService.logout(logoutRequest));
     }
 
     @Test
@@ -118,7 +123,7 @@ public class ServiceTests {
 
         //Confirm games have unique IDs
         Assertions.assertNotEquals(createGameResponse2.gameID(), createGameResponse1.gameID());
-        GameData gameData = getGame(1);
+        GameData gameData = gameDAO.getGame(1);
         GameData expectedGameData1 = new GameData(
                 1, null, null, "Bob's game", new ChessGame());
 
@@ -133,7 +138,7 @@ public class ServiceTests {
         registerBob();
         CreateGameRequest createGameRequest = new CreateGameRequest("Bob's game");
         Assertions.assertThrows(DataAccessException.UnauthorizedException.class,
-                () -> createGame("hi", createGameRequest));
+                () -> gameService.createGame("hi", createGameRequest));
     }
 
     @Test
@@ -142,7 +147,7 @@ public class ServiceTests {
     public void successfulListGames() throws Exception {
         String authToken = registerBob().authToken();
         ListGamesRequest listGamesRequest = new ListGamesRequest(authToken);
-        ListGamesResponse listGamesResponse = listGames(listGamesRequest);
+        ListGamesResponse listGamesResponse = gameService.listGames(listGamesRequest);
         Assertions.assertEquals(new HashSet<>(), listGamesResponse.games());
 
         makeBobsGame(authToken);
@@ -160,7 +165,7 @@ public class ServiceTests {
         registerBob();
         ListGamesRequest listGamesRequest = new ListGamesRequest("hi");
         Assertions.assertThrows(DataAccessException.UnauthorizedException.class,
-                () -> listGames(listGamesRequest));
+                () -> gameService.listGames(listGamesRequest));
     }
 
     @Test
@@ -168,7 +173,7 @@ public class ServiceTests {
     @DisplayName("Successful Join Game")
     public void successfulJoinGame() throws Exception {
         JoinGameResponse joinGameResponse = registerMakeAndJoinGame();
-        GameData gameData = getGame(1);
+        GameData gameData = gameDAO.getGame(1);
         Assertions.assertNotNull(gameData);
         Assertions.assertEquals("Bob", gameData.whiteUsername());
         Assertions.assertNull(joinGameResponse.message());
@@ -182,7 +187,7 @@ public class ServiceTests {
         makeBobsGame(authToken);
         JoinGameResponse joinGameResponse1 = joinBobsGame(authToken, "WHITE");
         JoinGameResponse joinGameResponse2 = joinBobsGame(authToken, "BLACK");
-        GameData gameData = getGame(1);
+        GameData gameData = gameDAO.getGame(1);
 
         Assertions.assertNotNull(gameData);
         Assertions.assertEquals("Bob", gameData.whiteUsername());
@@ -198,7 +203,7 @@ public class ServiceTests {
         registerMakeAndJoinGame();
         JoinGameRequest joinGameRequest = new JoinGameRequest("BLACK", 1);
         Assertions.assertThrows(DataAccessException.UnauthorizedException.class,
-                () -> joinGame("hi", joinGameRequest));
+                () -> gameService.joinGame("hi", joinGameRequest));
     }
 
     @Test
@@ -209,7 +214,7 @@ public class ServiceTests {
         makeBobsGame(authToken);
         JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", 2);
         Assertions.assertThrows(BadRequestException.class,
-                () -> joinGame(authToken, joinGameRequest));
+                () -> gameService.joinGame(authToken, joinGameRequest));
     }
 
     @Test
@@ -229,31 +234,31 @@ public class ServiceTests {
     @DisplayName("Successful Clear")
     public void successfulClear() throws Exception {
         registerMakeAndJoinGame();
-        ClearService.clear();
-        assert(getGames().isEmpty());
-        assert(getUsers().isEmpty());
-        assert(getAuths().isEmpty());
+        clearService.clear();
+        assert(gameDAO.getGames().isEmpty());
+        assert(userDAO.getUsers().isEmpty());
+        assert(authDAO.getAuths().isEmpty());
     }
 
-    static JoinGameResponse registerMakeAndJoinGame() throws DataAccessException {
+    JoinGameResponse registerMakeAndJoinGame() throws DataAccessException {
         String authToken = registerBob().authToken();
         makeBobsGame(authToken);
         return joinBobsGame(authToken, "WHITE");
     }
 
-    static JoinGameResponse joinBobsGame(String authToken, String color) throws DataAccessException, BadRequestException {
+    JoinGameResponse joinBobsGame(String authToken, String color) throws DataAccessException, BadRequestException {
         JoinGameRequest joinGameRequest = new JoinGameRequest(color, 1);
-        return joinGame(authToken, joinGameRequest);
+        return gameService.joinGame(authToken, joinGameRequest);
     }
 
-    static RegisterResponse registerBob() throws DataAccessException {
-        return register(new RegisterRequest(
+    RegisterResponse registerBob() throws DataAccessException {
+        return userService.register(new RegisterRequest(
                 "Bob", "goCougs27", "mjc2021@byu.edu"));
     }
 
-    static CreateGameResponse makeBobsGame(String authToken) throws DataAccessException {
+    CreateGameResponse makeBobsGame(String authToken) throws DataAccessException {
         CreateGameRequest createGameRequest = new CreateGameRequest("Bob's game");
-        return createGame(authToken, createGameRequest);
+        return gameService.createGame(authToken, createGameRequest);
     }
 
 }

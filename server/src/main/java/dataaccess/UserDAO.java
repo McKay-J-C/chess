@@ -3,17 +3,24 @@ package dataaccess;
 import model.AuthData;
 import model.UserData;
 
+import java.util.HashSet;
+
 public interface UserDAO {
 
-    static AuthData createUser(String username, String password, String email) {
-        return new AuthData("", "");
+
+    default AuthData createUser(String username, String password, String email) {
+        return null;
     }
 
-    static UserData getUser(String username) {
+    default UserData getUser(String username) {
         return new UserData("", "", "");
     }
 
-    static void clear() {
+    default void clear() {
 
+    }
+
+    default HashSet<UserData> getUsers() {
+        return null;
     }
 }

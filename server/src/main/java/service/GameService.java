@@ -1,45 +1,49 @@
 package service;
 
 import chess.ChessGame;
+import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
+import dataaccess.GameDAO;
 import model.AuthData;
 import model.GameData;
 import response.*;
 import request.*;
-import dataaccess.MemGameDAO.*;
-
 import java.util.HashSet;
-
-import static dataaccess.MemAuthDAO.authorize;
-import static dataaccess.MemGameDAO.*;
 
 public class GameService {
 
-    public static ListGamesResponse listGames(ListGamesRequest listGamesRequest) throws DataAccessException {
-        authorize(listGamesRequest.authToken());
-        HashSet<GameData> games = getGames();
+    private final GameDAO gameDAO;
+    private final AuthDAO authDAO;
+
+    public GameService(GameDAO gameDAO, AuthDAO authDAO) {
+        this.gameDAO = gameDAO;
+        this.authDAO = authDAO;
+    }
+
+    public ListGamesResponse listGames(ListGamesRequest listGamesRequest) throws DataAccessException {
+        authDAO.authorize(listGamesRequest.authToken());
+        HashSet<GameData> games = gameDAO.getGames();
         return new ListGamesResponse(games, null);
     }
 
-    public static CreateGameResponse createGame(String authToken, CreateGameRequest createGameRequest) throws DataAccessException {
-        authorize(authToken);
-        int gameID = addGame(createGameRequest.gameName());
+    public CreateGameResponse createGame(String authToken, CreateGameRequest createGameRequest) throws DataAccessException {
+        authDAO.authorize(authToken);
+        int gameID = gameDAO.addGame(createGameRequest.gameName());
         return new CreateGameResponse(gameID, null);
     }
 
-    public static JoinGameResponse joinGame(String authToken, JoinGameRequest joinGameRequest) throws DataAccessException {
-        AuthData auth = authorize(authToken);
+    public JoinGameResponse joinGame(String authToken, JoinGameRequest joinGameRequest) throws DataAccessException {
+        AuthData auth = authDAO.authorize(authToken);
         int gameID = joinGameRequest.gameID();
-        GameData game = getGame(gameID);
+        GameData game = gameDAO.getGame(gameID);
         if (game == null) {
             throw new BadRequestException("Error: No game " + gameID);
         }
 
         String color = joinGameRequest.playerColor();
-        ChessGame.TeamColor teamColor;
+        ChessGame.TeamColor teamColor = ChessGame.TeamColor.WHITE;
 
         if (color.equals("WHITE")) {
-            teamColor = ChessGame.TeamColor.WHITE;
             if (game.whiteUsername() != null) {
                 throw new DataAccessException.AlreadyTakenException("Error: already taken");
             }
@@ -54,7 +58,7 @@ public class GameService {
             throw new BadRequestException("Error: Not a valid color");
         }
 
-        updateGame(gameID, teamColor, auth.username());
+        gameDAO.updateGame(gameID, teamColor, auth.username());
         return new JoinGameResponse(null);
     }
 }

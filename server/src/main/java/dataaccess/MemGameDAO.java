@@ -7,17 +7,19 @@ import java.util.HashSet;
 
 public class MemGameDAO implements GameDAO {
 
-    static HashSet<GameData> gameData = new HashSet<>();
-    static int curID = 1;
+    HashSet<GameData> gameData = new HashSet<>();
+    int curID = 1;
 
-    public static int addGame(String gameName) {
+    @Override
+    public int addGame(String gameName) {
         GameData game = new GameData(curID, null, null, gameName, new ChessGame());
         curID++;
         gameData.add(game);
         return game.gameID();
     }
 
-    public static GameData getGame(int gameID) {
+    @Override
+    public GameData getGame(int gameID) {
         for (GameData game : gameData) {
             if (game.gameID() == gameID) {
                 return game;
@@ -26,11 +28,13 @@ public class MemGameDAO implements GameDAO {
         return null;
     }
 
-    public static HashSet<GameData> getGames() {
+    @Override
+    public HashSet<GameData> getGames() {
         return gameData;
     }
 
-    public static void updateGame(int gameID, ChessGame.TeamColor teamColor, String username) {
+    @Override
+    public void updateGame(int gameID, ChessGame.TeamColor teamColor, String username) {
         for (GameData game : gameData) {
             if (game.gameID() == gameID) {
                 gameData.remove(game);
@@ -45,7 +49,8 @@ public class MemGameDAO implements GameDAO {
         }
     }
 
-    public static void clear() {
+    @Override
+    public void clear() {
         gameData = new HashSet<>();
         curID = 1;
     }

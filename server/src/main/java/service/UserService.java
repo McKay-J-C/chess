@@ -1,30 +1,38 @@
 package service;
 
+import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
+import dataaccess.UserDAO;
 import model.AuthData;
 import model.UserData;
 import response.*;
 import request.*;
 
-import static dataaccess.MemAuthDAO.*;
-import static dataaccess.MemUserDAO.*;
 
 public class UserService {
 
-    public static RegisterResponse register(RegisterRequest registerRequest) throws DataAccessException, DataAccessException.AlreadyTakenException {
+    private final UserDAO userDAO;
+    private final AuthDAO authDAO;
+
+    public UserService(UserDAO userDAO, AuthDAO authDAO) {
+        this.userDAO = userDAO;
+        this.authDAO = authDAO;
+    }
+
+    public RegisterResponse register(RegisterRequest registerRequest) throws DataAccessException, DataAccessException.AlreadyTakenException {
         String username = registerRequest.username();
         String password = registerRequest.password();
         String email = registerRequest.email();
 
-        AuthData userAuth = createUser(username, password, email);
+        AuthData userAuth = userDAO.createUser(username, password, email);
         return new RegisterResponse(userAuth.username(), userAuth.authToken(), null);
     }
 
-    public static LoginResponse login(LoginRequest loginRequest) {
+    public LoginResponse login(LoginRequest loginRequest) {
         String username = loginRequest.username();
         String password = loginRequest.password();
 
-        UserData user = getUser(username);
+        UserData user = userDAO.getUser(username);
         if (user == null) {
             throw new DataAccessException.UnauthorizedException("Error: username not found");
         }
@@ -32,13 +40,13 @@ public class UserService {
             throw new DataAccessException.UnauthorizedException("Error: incorrect password");
         }
 
-        AuthData authData = createAuth(username);
+        AuthData authData = authDAO.createAuth(username);
         return new LoginResponse(username, authData.authToken(), null);
     }
 
-    public static LogoutResponse logout(LogoutRequest logoutRequest) throws DataAccessException {
-        AuthData auth = authorize(logoutRequest.authToken());
-        deleteAuth(auth);
+    public LogoutResponse logout(LogoutRequest logoutRequest) throws DataAccessException {
+        AuthData auth = authDAO.authorize(logoutRequest.authToken());
+        authDAO.deleteAuth(auth);
         return new LogoutResponse(null);
     }
 }

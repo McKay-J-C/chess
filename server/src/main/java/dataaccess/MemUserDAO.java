@@ -5,21 +5,23 @@ import model.UserData;
 
 import java.util.HashSet;
 
-import static dataaccess.MemAuthDAO.createAuth;
 
 public class MemUserDAO implements UserDAO {
 
     static HashSet<UserData> userData = new HashSet<>();
 
-    public static AuthData createUser(String username, String password, String email) {
+    @Override
+    public AuthData createUser(String username, String password, String email) {
         if (getUser(username) != null) {
             throw new DataAccessException.AlreadyTakenException("Error: already taken");
         }
         userData.add(new UserData(username, password, email));
-        return createAuth(username);
+        MemAuthDAO authDAO = new MemAuthDAO();
+        return authDAO.createAuth(username);
     }
 
-    public static UserData getUser(String username) {
+    @Override
+    public UserData getUser(String username) {
         if (userData == null) {
             return null;
         }
@@ -31,11 +33,13 @@ public class MemUserDAO implements UserDAO {
         return null;
     }
 
-    public static void clear() {
+    @Override
+    public void clear() {
         userData = new HashSet<>();
     }
 
-    public static HashSet<UserData> getUsers() {
+    @Override
+    public HashSet<UserData> getUsers() {
         return userData;
     }
 }
