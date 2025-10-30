@@ -21,10 +21,10 @@ public class Server {
     private final GameService gameService;
     private final UserService userService;
 
-    public Server() {
-        this(new ClearService(new MemAuthDAO(), new MemGameDAO(), new MemUserDAO()),
-                new GameService(new MemGameDAO(), new MemAuthDAO()),
-                new UserService(new MemUserDAO(), new MemAuthDAO() {
+    public Server() throws DataAccessException {
+        this(new ClearService(new SqlUserDAO(), new SqlAuthDAO(), new SqlGameDAO()),
+                new GameService(new SqlGameDAO(), new SqlAuthDAO()),
+                new UserService(new SqlUserDAO(), new SqlAuthDAO() {
                 }));
     }
 

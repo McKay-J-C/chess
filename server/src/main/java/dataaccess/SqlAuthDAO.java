@@ -1,12 +1,47 @@
 package dataaccess;
 
+import model.AuthData;
+
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashSet;
 
 public class SqlAuthDAO implements AuthDAO {
 
     public SqlAuthDAO() throws DataAccessException {
         configureDatabase();
+    }
+
+    @Override
+    public AuthData createAuth(String username) {
+        return null;
+    }
+
+    @Override
+    public AuthData getAuth(String authToken) {
+        return null;
+    }
+
+    @Override
+    public void deleteAuth(AuthData auth) {
+    }
+
+    @Override
+    public AuthData authorize(String authToken) throws DataAccessException {
+        AuthData authData = this.getAuth(authToken);
+        if (authData == null) {
+            throw new DataAccessException.UnauthorizedException("Error: unauthorized");
+        }
+        return authData;
+    }
+
+    @Override
+    public void clear() {
+    }
+
+    @Override
+    public HashSet<AuthData> getAuths() {
+        return null;
     }
 
     private final String[] createStatements = {
@@ -16,7 +51,8 @@ public class SqlAuthDAO implements AuthDAO {
               `username` varchar(256) NOT NULL,
               `authToken` varchar(256) NOT NULL,
               PRIMARY KEY (`id`),
-              INDEX(username)
+              INDEX(username),
+              FOREIGN KEY (username) REFERENCES user(username)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };

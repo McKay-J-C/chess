@@ -6,9 +6,6 @@ import dataaccess.*;
 import model.*;
 import request.*;
 import response.*;
-import dataaccess.UserDAO;
-import dataaccess.AuthDAO;
-import dataaccess.GameDAO;
 
 import org.junit.jupiter.api.*;
 import java.util.HashSet;
@@ -20,9 +17,6 @@ public class ServiceTests {
     ClearService clearService = new ClearService(new MemAuthDAO(), new MemGameDAO(), new MemUserDAO());
     GameService gameService = new GameService(clearService.getGameDAO(), clearService.getAuthDAO());
     UserService userService = new UserService(clearService.getUserDAO(), clearService.getAuthDAO());
-//    UserDAO userDAO = new MemUserDAO();
-//    GameDAO gameDAO = new MemGameDAO();
-//    AuthDAO authDAO = new MemAuthDAO();
 
     @AfterEach
     public void clear() {
