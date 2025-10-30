@@ -15,6 +15,18 @@ public class ClearService {
         this.userDAO = userDAO;
     }
 
+    public AuthDAO getAuthDAO() {
+        return authDAO;
+    }
+
+    public GameDAO getGameDAO() {
+        return gameDAO;
+    }
+
+    public UserDAO getUserDAO() {
+        return userDAO;
+    }
+
     public ClearResponse clear() {
         authDAO.clear();
         gameDAO.clear();

@@ -5,10 +5,11 @@ import model.UserData;
 
 import java.util.HashSet;
 
+import static dataaccess.MemDatabase.userData;
+
 
 public class MemUserDAO implements UserDAO {
 
-    static HashSet<UserData> userData = new HashSet<>();
 
     @Override
     public AuthData createUser(String username, String password, String email) {

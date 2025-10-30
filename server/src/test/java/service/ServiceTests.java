@@ -18,11 +18,11 @@ import java.util.HashSet;
 public class ServiceTests {
 
     ClearService clearService = new ClearService(new MemAuthDAO(), new MemGameDAO(), new MemUserDAO());
-    GameService gameService = new GameService(new MemGameDAO(), new MemAuthDAO());
-    UserService userService = new UserService(new MemUserDAO(), new MemAuthDAO());
-    UserDAO userDAO = new MemUserDAO();
-    GameDAO gameDAO = new MemGameDAO();
-    AuthDAO authDAO = new MemAuthDAO();
+    GameService gameService = new GameService(clearService.getGameDAO(), clearService.getAuthDAO());
+    UserService userService = new UserService(clearService.getUserDAO(), clearService.getAuthDAO());
+//    UserDAO userDAO = new MemUserDAO();
+//    GameDAO gameDAO = new MemGameDAO();
+//    AuthDAO authDAO = new MemAuthDAO();
 
     @AfterEach
     public void clear() {
@@ -34,7 +34,7 @@ public class ServiceTests {
     @DisplayName("Successful Registration")
     public void successfulRegistration() throws Exception {
         RegisterResponse foundResponse =  registerBob();
-        UserData foundUser = userDAO.getUser("Bob");
+        UserData foundUser = userService.getUserDAO().getUser("Bob");
         UserData testUser = new UserData("Bob", "goCougs27", "mjc2021@byu.edu");
         Assertions.assertEquals(testUser, foundUser);
 
@@ -100,7 +100,7 @@ public class ServiceTests {
         Assertions.assertNull(logoutResponse.message());
         //Make sure authorization is deleted
         Assertions.assertThrows(DataAccessException.UnauthorizedException.class,
-                () -> authDAO.authorize(authToken));
+                () -> userService.getAuthDAO().authorize(authToken));
     }
 
     @Test
@@ -123,7 +123,7 @@ public class ServiceTests {
 
         //Confirm games have unique IDs
         Assertions.assertNotEquals(createGameResponse2.gameID(), createGameResponse1.gameID());
-        GameData gameData = gameDAO.getGame(1);
+        GameData gameData = gameService.getGameDAO().getGame(1);
         GameData expectedGameData1 = new GameData(
                 1, null, null, "Bob's game", new ChessGame());
 
@@ -173,7 +173,7 @@ public class ServiceTests {
     @DisplayName("Successful Join Game")
     public void successfulJoinGame() throws Exception {
         JoinGameResponse joinGameResponse = registerMakeAndJoinGame();
-        GameData gameData = gameDAO.getGame(1);
+        GameData gameData = gameService.getGameDAO().getGame(1);
         Assertions.assertNotNull(gameData);
         Assertions.assertEquals("Bob", gameData.whiteUsername());
         Assertions.assertNull(joinGameResponse.message());
@@ -187,7 +187,7 @@ public class ServiceTests {
         makeBobsGame(authToken);
         JoinGameResponse joinGameResponse1 = joinBobsGame(authToken, "WHITE");
         JoinGameResponse joinGameResponse2 = joinBobsGame(authToken, "BLACK");
-        GameData gameData = gameDAO.getGame(1);
+        GameData gameData = gameService.getGameDAO().getGame(1);
 
         Assertions.assertNotNull(gameData);
         Assertions.assertEquals("Bob", gameData.whiteUsername());
@@ -235,9 +235,9 @@ public class ServiceTests {
     public void successfulClear() throws Exception {
         registerMakeAndJoinGame();
         clearService.clear();
-        assert(gameDAO.getGames().isEmpty());
-        assert(userDAO.getUsers().isEmpty());
-        assert(authDAO.getAuths().isEmpty());
+        assert(gameService.getGameDAO().getGames().isEmpty());
+        assert(userService.getUserDAO().getUsers().isEmpty());
+        assert(userService.getAuthDAO().getAuths().isEmpty());
     }
 
     JoinGameResponse registerMakeAndJoinGame() throws DataAccessException {

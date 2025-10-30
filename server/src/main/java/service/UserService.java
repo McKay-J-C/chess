@@ -19,6 +19,14 @@ public class UserService {
         this.authDAO = authDAO;
     }
 
+    public UserDAO getUserDAO() {
+        return userDAO;
+    }
+
+    public AuthDAO getAuthDAO() {
+        return authDAO;
+    }
+
     public RegisterResponse register(RegisterRequest registerRequest) throws DataAccessException, DataAccessException.AlreadyTakenException {
         String username = registerRequest.username();
         String password = registerRequest.password();

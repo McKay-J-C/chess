@@ -4,11 +4,10 @@ import model.AuthData;
 
 import java.util.HashSet;
 
+import static dataaccess.MemDatabase.authData;
 import static model.AuthData.generateToken;
 
 public class MemAuthDAO implements AuthDAO {
-
-    HashSet<AuthData> authData = new HashSet<>();
 
     @Override
     public AuthData createAuth(String username) {

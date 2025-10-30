@@ -20,6 +20,14 @@ public class GameService {
         this.authDAO = authDAO;
     }
 
+    public GameDAO getGameDAO() {
+        return gameDAO;
+    }
+
+    public AuthDAO getAuthDAO() {
+        return authDAO;
+    }
+
     public ListGamesResponse listGames(ListGamesRequest listGamesRequest) throws DataAccessException {
         authDAO.authorize(listGamesRequest.authToken());
         HashSet<GameData> games = gameDAO.getGames();

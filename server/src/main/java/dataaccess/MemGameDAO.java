@@ -5,10 +5,10 @@ import model.GameData;
 
 import java.util.HashSet;
 
-public class MemGameDAO implements GameDAO {
+import static dataaccess.MemDatabase.curID;
+import static dataaccess.MemDatabase.gameData;
 
-    HashSet<GameData> gameData = new HashSet<>();
-    int curID = 1;
+public class MemGameDAO implements GameDAO {
 
     @Override
     public int addGame(String gameName) {
