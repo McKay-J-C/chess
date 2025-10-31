@@ -81,6 +81,13 @@ public class SqlDaoTests {
         assertEquivalentUserSets(userData, testUserData);
     }
 
+    @Test
+    @Order(6)
+    @DisplayName("Unsuccessful Get Users")
+    public void noUsersGetUsers() throws DataAccessException, SQLException {
+        Assertions.assertNull(userDAO.getUsers());
+    }
+
     public void createBob() throws DataAccessException, SQLException {
         userDAO.createUser("Bob", "goCougs27", "cs240@gmail.com");
     }

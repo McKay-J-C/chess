@@ -86,7 +86,7 @@ public class SqlUserDAO implements UserDAO {
                 }
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException("Error in finding user");
+            throw new DataAccessException("Error in finding users");
         }
         if (users.isEmpty()) {
             return null;
