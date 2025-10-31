@@ -7,7 +7,7 @@ import java.util.HashSet;
 
 public interface AuthDAO {
 
-    default AuthData createAuth(String username) {
+    default AuthData createAuth(String username) throws DataAccessException {
         return null;
     }
 

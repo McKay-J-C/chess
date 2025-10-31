@@ -1,10 +1,13 @@
 package dataaccess;
 
 import model.AuthData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashSet;
+
+import static model.AuthData.generateToken;
 
 public class SqlAuthDAO implements AuthDAO {
 
@@ -13,8 +16,21 @@ public class SqlAuthDAO implements AuthDAO {
     }
 
     @Override
-    public AuthData createAuth(String username) {
-        return null;
+    public AuthData createAuth(String username) throws DataAccessException {
+        String token = generateToken();
+        AuthData auth = new AuthData(token, username);
+        String statement = "INSERT INTO auth (username, authToken) VALUES (?, ?)";
+        try (var conn = DatabaseManager.getConnection()) {
+            var preparedStatement = conn.prepareStatement(statement);
+            preparedStatement.setString(1, username);
+            preparedStatement.setString(2, token);
+            preparedStatement.executeUpdate();
+            return auth;
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

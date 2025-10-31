@@ -24,4 +24,8 @@ public interface UserDAO {
     default HashSet<UserData> getUsers() {
         return null;
     }
+
+    default boolean verifyUser(String username, String providedClearTextPassword) throws DataAccessException {
+        return false;
+    }
 }

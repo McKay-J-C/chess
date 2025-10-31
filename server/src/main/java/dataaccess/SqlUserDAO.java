@@ -2,6 +2,7 @@ package dataaccess;
 
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -16,7 +17,24 @@ public class SqlUserDAO implements UserDAO {
 
     @Override
     public AuthData createUser(String username, String password, String email) throws SQLException, DataAccessException {
-        return null;
+        if (getUser(username) != null) {
+            throw new DataAccessException.AlreadyTakenException("Error: already taken");
+        }
+        String statement = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
+        try (var conn = DatabaseManager.getConnection()) {
+            var preparedStatement = conn.prepareStatement(statement);
+            preparedStatement.setString(1, username);
+            String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+
+            preparedStatement.setString(2, hashedPassword);
+            preparedStatement.setString(3, email);
+            preparedStatement.executeUpdate();
+
+            AuthDAO authDAO = new SqlAuthDAO();
+            return authDAO.createAuth(username);
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     @Override
@@ -83,6 +101,17 @@ public class SqlUserDAO implements UserDAO {
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
+    }
+
+    @Override
+    public boolean verifyUser(String username, String providedClearTextPassword) throws DataAccessException {
+        // read the previously hashed password from the database
+        UserData userData = getUser(username);
+        if (userData == null) {
+            throw new DataAccessException("Username not found");
+        }
+        String hashedPassword = userData.password();
+        return BCrypt.checkpw(providedClearTextPassword, hashedPassword);
     }
 
 }
