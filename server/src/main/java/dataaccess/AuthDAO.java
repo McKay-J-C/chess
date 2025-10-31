@@ -15,7 +15,7 @@ public interface AuthDAO {
         return null;
     }
 
-    default void deleteAuth(AuthData auth) {
+    default void deleteAuth(AuthData auth) throws DataAccessException {
     }
 
     default AuthData authorize(String authToken) throws DataAccessException {

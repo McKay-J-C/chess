@@ -125,8 +125,7 @@ public class SqlDaoTests {
     @Order(10)
     @DisplayName("Successful Create Auth")
     public void successfulCreateAuth() throws DataAccessException, SQLException {
-        createBob();
-        AuthData authData = authDAO.createAuth("Bob");
+        AuthData authData = createBobAndAuth();
         AuthData foundAuthData = authDAO.getAuth(authData.authToken());
         Assertions.assertEquals(authData, foundAuthData);
     }
@@ -142,10 +141,8 @@ public class SqlDaoTests {
     @Order(12)
     @DisplayName("Successful Get Auths")
     public void successfulGetAuths() throws DataAccessException, SQLException {
-        createBob();
-        createDave();
-        AuthData bobAuth = authDAO.createAuth("Bob");
-        AuthData daveAuth = authDAO.createAuth("Dave");
+        AuthData bobAuth = createBobAndAuth();
+        AuthData daveAuth = createDaveAndAuth();
         HashSet<AuthData> authData = authDAO.getAuths();
 
         Assertions.assertTrue(authData.contains(bobAuth));
@@ -159,6 +156,35 @@ public class SqlDaoTests {
     @DisplayName("Unsuccessful Get Auths")
     public void noAuthGetAuths() throws DataAccessException, SQLException {
         Assertions.assertNull(authDAO.getAuths());
+    }
+
+    @Test
+    @Order(14)
+    @DisplayName("Successful Delete Auth")
+    public void successfulDeleteAuth() throws DataAccessException, SQLException {
+        AuthData bobAuth = createBobAndAuth();
+        authDAO.deleteAuth(bobAuth);
+        Assertions.assertNull(authDAO.getAuth(bobAuth.authToken()));
+    }
+
+    @Test
+    @Order(15)
+    @DisplayName("Wrong AuthToken Delete Auth")
+    public void wrongAuthDeleteAuth() throws DataAccessException, SQLException {
+        AuthData bobAuth = createBobAndAuth();
+        AuthData authData = new AuthData("Bob", "hi");
+        authDAO.deleteAuth(authData);
+        Assertions.assertEquals(bobAuth, authDAO.getAuth(bobAuth.authToken()));
+    }
+
+    public AuthData createBobAndAuth() throws SQLException, DataAccessException {
+        createBob();
+        return authDAO.createAuth("Bob");
+    }
+
+    public AuthData createDaveAndAuth() throws SQLException, DataAccessException {
+        createDave();
+        return authDAO.createAuth("Dave");
     }
 
     public void createBob() throws DataAccessException, SQLException {
