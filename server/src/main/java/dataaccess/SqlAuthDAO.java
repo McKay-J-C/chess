@@ -1,9 +1,12 @@
 package dataaccess;
 
 import model.AuthData;
+import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 
@@ -34,7 +37,22 @@ public class SqlAuthDAO implements AuthDAO {
     }
 
     @Override
-    public AuthData getAuth(String authToken) {
+    public AuthData getAuth(String authToken) throws DataAccessException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT authToken, username FROM auth WHERE authToken=?";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.setString(1, authToken);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String foundAuthToken = rs.getString("authToken");
+                        String foundUsername = rs.getString("username");
+                        return new AuthData(foundAuthToken, foundUsername);
+                    }
+                }
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new DataAccessException("Error in finding auth");
+        }
         return null;
     }
 
@@ -72,9 +90,10 @@ public class SqlAuthDAO implements AuthDAO {
             """
             CREATE TABLE IF NOT EXISTS auth (
               `id` int NOT NULL AUTO_INCREMENT,
-              `username` varchar(256) NOT NULL,
               `authToken` varchar(256) NOT NULL,
+              `username` varchar(256) NOT NULL,
               PRIMARY KEY (`id`),
+              INDEX(authToken),
               INDEX(username),
               FOREIGN KEY (username) REFERENCES user(username) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci

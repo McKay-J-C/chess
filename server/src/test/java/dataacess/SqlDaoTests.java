@@ -3,6 +3,7 @@ package dataacess;
 
 import dataaccess.*;
 
+import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.*;
 import org.mindrot.jbcrypt.BCrypt;
@@ -100,6 +101,31 @@ public class SqlDaoTests {
         Assertions.assertNull(userDAO.getUser("Dave"));
     }
 
+    @Test
+    @Order(8)
+    @DisplayName("Successful Get Auth")
+    public void successfulGetAuth() throws DataAccessException, SQLException {
+        makeUserBob();
+        makeBobAuth();
+        AuthData testAuth = new AuthData("BobsAuth", "Bob");
+        AuthData auth = authDAO.getAuth("BobsAuth");
+        Assertions.assertEquals(testAuth, auth);
+    }
+
+    @Test
+    @Order(9)
+    @DisplayName("Unsuccessful Get Auth")
+    public void unsuccessfulGetAuth() throws DataAccessException, SQLException {
+        makeUserBob();
+        makeBobAuth();
+        Assertions.assertNull(authDAO.getAuth("hi"));
+    }
+
+//    @Test
+//    @Order(9)
+//    @DisplayName("Successful Create Auth")
+//    public void createAuth()
+
     public void createBob() throws DataAccessException, SQLException {
         userDAO.createUser("Bob", "goCougs27", "cs240@gmail.com");
     }
@@ -122,7 +148,19 @@ public class SqlDaoTests {
         }
     }
 
-    public void assertEquivalentUsers(UserData userData, UserData testUserData, String clearPassword) throws DataAccessException {
+    public void makeBobAuth() throws DataAccessException {
+        String statement = "INSERT INTO auth (username, authToken) VALUES (?, ?)";
+        try (var conn = DatabaseManager.getConnection()) {
+            var preparedStatement = conn.prepareStatement(statement);
+            preparedStatement.setString(1, "Bob");
+            preparedStatement.setString(2, "BobsAuth");
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+        public void assertEquivalentUsers(UserData userData, UserData testUserData, String clearPassword) throws DataAccessException {
         Assertions.assertEquals(testUserData.username(), userData.username());
         Assertions.assertEquals(testUserData.email(), userData.email());
         Assertions.assertTrue(userDAO.verifyUser(testUserData.username(), clearPassword));

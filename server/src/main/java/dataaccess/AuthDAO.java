@@ -11,7 +11,7 @@ public interface AuthDAO {
         return null;
     }
 
-    default AuthData getAuth(String authToken) {
+    default AuthData getAuth(String authToken) throws DataAccessException {
         return null;
     }
 
