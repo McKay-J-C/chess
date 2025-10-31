@@ -9,6 +9,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import service.ClearService;
 
 import java.sql.SQLException;
+import java.util.HashSet;
 
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -35,7 +36,7 @@ public class SqlDaoTests {
         UserData userData = userDAO.getUser("Bob");
         String hashedPassword = BCrypt.hashpw("goCougs27", BCrypt.gensalt());
         UserData testUserData = new UserData("Bob", hashedPassword, "cs240@gmail.com");
-        assertEquivalentUsers(userData, testUserData);
+        assertEquivalentUsers(userData, testUserData, "goCougs27");
     }
 
     @Test
@@ -54,7 +55,7 @@ public class SqlDaoTests {
         createBob();
         UserData userData = userDAO.getUser("Bob");
         UserData testUserData = new UserData("Bob", "goCougs27", "cs240@gmail.com");
-        assertEquivalentUsers(userData, testUserData);
+        assertEquivalentUsers(userData, testUserData, "goCougs27");
     }
 
     @Test
@@ -65,8 +66,27 @@ public class SqlDaoTests {
         Assertions.assertThrows(DataAccessException.AlreadyTakenException.class, this::createBob);
     }
 
+    @Test
+    @Order(5)
+    @DisplayName("Successful Get Users")
+    public void successfulGetUsers() throws DataAccessException, SQLException {
+        createBob();
+        createDave();
+        HashSet<UserData> userData = userDAO.getUsers();
+
+        HashSet<UserData> testUserData = new HashSet<>();
+        testUserData.add(new UserData("Bob", "goCougs27", "cs240@gmail.com"));
+        testUserData.add(new UserData("Dave", "yourmom", "hi@gmail.com"));
+
+        assertEquivalentUserSets(userData, testUserData);
+    }
+
     public void createBob() throws DataAccessException, SQLException {
         userDAO.createUser("Bob", "goCougs27", "cs240@gmail.com");
+    }
+
+    public void createDave() throws DataAccessException, SQLException {
+        userDAO.createUser("Dave", "yourmom", "hi@gmail.com");
     }
 
     public void makeUserBob() throws DataAccessException {
@@ -83,9 +103,23 @@ public class SqlDaoTests {
         }
     }
 
-    public void assertEquivalentUsers(UserData userData, UserData testUserData) throws DataAccessException {
+    public void assertEquivalentUsers(UserData userData, UserData testUserData, String clearPassword) throws DataAccessException {
         Assertions.assertEquals(testUserData.username(), userData.username());
         Assertions.assertEquals(testUserData.email(), userData.email());
-        Assertions.assertTrue(userDAO.verifyUser(testUserData.username(), "goCougs27"));
+        Assertions.assertTrue(userDAO.verifyUser(testUserData.username(), clearPassword));
+    }
+
+    public void assertEquivalentUserSets(HashSet<UserData> userData, HashSet<UserData> testUserData) throws DataAccessException {
+        for (UserData user : userData) {
+            String username = user.username();
+            boolean found = false;
+            for (UserData testUser : testUserData) {
+                if (testUser.username().equals(username)) {
+                    assertEquivalentUsers(user, testUser, testUser.password());
+                    found = true;
+                }
+            }
+            Assertions.assertTrue(found);
+        }
     }
 }

@@ -71,8 +71,27 @@ public class SqlUserDAO implements UserDAO {
     }
 
     @Override
-    public HashSet<UserData> getUsers() {
-        return null;
+    public HashSet<UserData> getUsers() throws DataAccessException {
+        HashSet<UserData> users = new HashSet<>();
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT * FROM user";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String foundUsername = rs.getString("username");
+                        String foundPassword = rs.getString("password");
+                        String foundEmail = rs.getString("email");
+                        users.add(new UserData(foundUsername, foundPassword, foundEmail));
+                    }
+                }
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new DataAccessException("Error in finding user");
+        }
+        if (users.isEmpty()) {
+            return null;
+        }
+        return users;
     }
 
     private final String[] createStatements = {
@@ -106,7 +125,8 @@ public class SqlUserDAO implements UserDAO {
     @Override
     public boolean verifyUser(String username, String providedClearTextPassword) throws DataAccessException {
         // read the previously hashed password from the database
-        UserData userData = getUser(username);
+        UserDAO userDAO = new SqlUserDAO();
+        UserData userData = userDAO.getUser(username);
         if (userData == null) {
             throw new DataAccessException("Username not found");
         }

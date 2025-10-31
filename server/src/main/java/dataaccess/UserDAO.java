@@ -21,7 +21,7 @@ public interface UserDAO {
 
     }
 
-    default HashSet<UserData> getUsers() {
+    default HashSet<UserData> getUsers() throws DataAccessException {
         return null;
     }
 
