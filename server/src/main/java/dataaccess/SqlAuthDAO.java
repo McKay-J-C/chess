@@ -80,8 +80,26 @@ public class SqlAuthDAO implements AuthDAO {
     }
 
     @Override
-    public HashSet<AuthData> getAuths() {
-        return null;
+    public HashSet<AuthData> getAuths() throws DataAccessException {
+        HashSet<AuthData> auths = new HashSet<>();
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT * FROM auth";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String foundAuthToken = rs.getString("authToken");
+                        String foundUsername = rs.getString("username");
+                        auths.add(new AuthData(foundAuthToken, foundUsername));
+                    }
+                }
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new DataAccessException("Error in finding users");
+        }
+        if (auths.isEmpty()) {
+            return null;
+        }
+        return auths;
     }
 
     private final String[] createStatements = {

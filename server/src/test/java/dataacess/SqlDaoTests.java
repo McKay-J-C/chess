@@ -138,6 +138,29 @@ public class SqlDaoTests {
         Assertions.assertThrows(DataAccessException.class, () -> authDAO.createAuth("Bob"));
     }
 
+    @Test
+    @Order(12)
+    @DisplayName("Successful Get Auths")
+    public void successfulGetAuths() throws DataAccessException, SQLException {
+        createBob();
+        createDave();
+        AuthData bobAuth = authDAO.createAuth("Bob");
+        AuthData daveAuth = authDAO.createAuth("Dave");
+        HashSet<AuthData> authData = authDAO.getAuths();
+
+        Assertions.assertTrue(authData.contains(bobAuth));
+        Assertions.assertTrue(authData.contains(daveAuth));
+        Assertions.assertNotNull(bobAuth.authToken());
+        Assertions.assertNotNull(daveAuth.authToken());
+    }
+
+    @Test
+    @Order(13)
+    @DisplayName("Unsuccessful Get Auths")
+    public void noAuthGetAuths() throws DataAccessException, SQLException {
+        Assertions.assertNull(authDAO.getAuths());
+    }
+
     public void createBob() throws DataAccessException, SQLException {
         userDAO.createUser("Bob", "goCougs27", "cs240@gmail.com");
     }

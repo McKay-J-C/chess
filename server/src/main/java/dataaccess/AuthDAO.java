@@ -29,7 +29,7 @@ public interface AuthDAO {
     default void clear() throws DataAccessException {
     }
 
-    default HashSet<AuthData> getAuths() {
+    default HashSet<AuthData> getAuths() throws DataAccessException {
         return null;
     }
 }
