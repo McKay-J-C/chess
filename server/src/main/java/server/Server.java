@@ -13,6 +13,8 @@ import service.ClearService;
 import service.GameService;
 import service.UserService;
 
+import java.sql.SQLException;
+
 
 public class Server {
 
@@ -59,7 +61,7 @@ public class Server {
         context.json(new Gson().toJson(errorResponse));
     }
 
-    private void registerHandler(@NotNull Context context) throws DataAccessException, BadRequestException {
+    private void registerHandler(@NotNull Context context) throws DataAccessException, BadRequestException, SQLException {
         RegisterRequest registerRequest = new Gson().fromJson(context.body(), RegisterRequest.class);
         checkArg(registerRequest.username());
         checkArg(registerRequest.password());
@@ -69,7 +71,7 @@ public class Server {
         context.json(new Gson().toJson(registerResponse));
     }
 
-    private void loginHandler(@NotNull Context context) throws BadRequestException {
+    private void loginHandler(@NotNull Context context) throws BadRequestException, DataAccessException {
         LoginRequest loginRequest = new Gson().fromJson(context.body(), LoginRequest.class);
         checkArg(loginRequest.username());
         checkArg(loginRequest.password());

@@ -25,6 +25,9 @@
       <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.25/kotlin-stdlib-jdk7-1.9.25.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ideaLibSources/javalin-6.4.0-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.ideaLibSources/javalin-6.4.0-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>

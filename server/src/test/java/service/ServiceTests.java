@@ -8,15 +8,21 @@ import request.*;
 import response.*;
 
 import org.junit.jupiter.api.*;
+
+import java.sql.SQLException;
 import java.util.HashSet;
 
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ServiceTests {
 
-    ClearService clearService = new ClearService(new MemAuthDAO(), new MemGameDAO(), new MemUserDAO());
+    ClearService clearService = new ClearService(new SqlUserDAO(), new SqlAuthDAO(), new SqlGameDAO());
+//    ClearService clearService = new ClearService(new MemUserDAO(), new MemAuthDAO(), new MemGameDAO());
     GameService gameService = new GameService(clearService.getGameDAO(), clearService.getAuthDAO());
     UserService userService = new UserService(clearService.getUserDAO(), clearService.getAuthDAO());
+
+    public ServiceTests() throws DataAccessException {
+    }
 
     @AfterEach
     public void clear() {
@@ -234,7 +240,7 @@ public class ServiceTests {
         assert(userService.getAuthDAO().getAuths().isEmpty());
     }
 
-    JoinGameResponse registerMakeAndJoinGame() throws DataAccessException {
+    JoinGameResponse registerMakeAndJoinGame() throws DataAccessException, SQLException {
         String authToken = registerBob().authToken();
         makeBobsGame(authToken);
         return joinBobsGame(authToken, "WHITE");
@@ -245,7 +251,7 @@ public class ServiceTests {
         return gameService.joinGame(authToken, joinGameRequest);
     }
 
-    RegisterResponse registerBob() throws DataAccessException {
+    RegisterResponse registerBob() throws DataAccessException, SQLException {
         return userService.register(new RegisterRequest(
                 "Bob", "goCougs27", "mjc2021@byu.edu"));
     }

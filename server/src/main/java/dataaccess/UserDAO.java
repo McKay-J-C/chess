@@ -3,16 +3,17 @@ package dataaccess;
 import model.AuthData;
 import model.UserData;
 
+import java.sql.SQLException;
 import java.util.HashSet;
 
 public interface UserDAO {
 
 
-    default AuthData createUser(String username, String password, String email) {
+    default AuthData createUser(String username, String password, String email) throws SQLException, DataAccessException {
         return null;
     }
 
-    default UserData getUser(String username) {
+    default UserData getUser(String username) throws DataAccessException {
         return new UserData("", "", "");
     }
 

@@ -6,6 +6,7 @@ import model.UserData;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashSet;
+import java.sql.*;
 
 public class SqlUserDAO implements UserDAO {
 
@@ -14,13 +15,29 @@ public class SqlUserDAO implements UserDAO {
     }
 
     @Override
-    public AuthData createUser(String username, String password, String email) {
+    public AuthData createUser(String username, String password, String email) throws SQLException, DataAccessException {
         return null;
     }
 
     @Override
-    public UserData getUser(String username) {
-        return new UserData("", "", "");
+    public UserData getUser(String username) throws DataAccessException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT username, password, email FROM user WHERE username=?";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.setString(1, username);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String foundUsername = rs.getString("username");
+                        String foundPassword = rs.getString("password");
+                        String foundEmail = rs.getString("email");
+                        return new UserData(foundUsername, foundPassword, foundEmail);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error in finding user");
+        }
+        return null;
     }
 
     @Override

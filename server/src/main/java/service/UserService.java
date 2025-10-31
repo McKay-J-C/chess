@@ -8,6 +8,8 @@ import model.UserData;
 import response.*;
 import request.*;
 
+import java.sql.SQLException;
+
 
 public class UserService {
 
@@ -27,7 +29,7 @@ public class UserService {
         return authDAO;
     }
 
-    public RegisterResponse register(RegisterRequest registerRequest) throws DataAccessException, DataAccessException.AlreadyTakenException {
+    public RegisterResponse register(RegisterRequest registerRequest) throws DataAccessException, DataAccessException.AlreadyTakenException, SQLException {
         String username = registerRequest.username();
         String password = registerRequest.password();
         String email = registerRequest.email();
@@ -36,7 +38,7 @@ public class UserService {
         return new RegisterResponse(userAuth.username(), userAuth.authToken(), null);
     }
 
-    public LoginResponse login(LoginRequest loginRequest) {
+    public LoginResponse login(LoginRequest loginRequest) throws DataAccessException {
         String username = loginRequest.username();
         String password = loginRequest.password();
 
