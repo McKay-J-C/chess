@@ -27,7 +27,7 @@ public interface GameDAO {
         return new HashSet<>();
     }
 
-    default void clear() {
+    default void clear() throws DataAccessException {
 
     }
 }

@@ -117,7 +117,7 @@ public class Server {
         context.json(new Gson().toJson(joinGameResponse));
     }
 
-    private void clearHandler(@NotNull Context context) {
+    private void clearHandler(@NotNull Context context) throws DataAccessException {
         ClearResponse clearResponse = clearService.clear();
         context.json(new Gson().toJson(clearResponse));
     }

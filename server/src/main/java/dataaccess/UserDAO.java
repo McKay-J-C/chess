@@ -17,7 +17,7 @@ public interface UserDAO {
         return new UserData("", "", "");
     }
 
-    default void clear() {
+    default void clear() throws DataAccessException {
 
     }
 

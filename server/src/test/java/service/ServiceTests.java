@@ -25,7 +25,7 @@ public class ServiceTests {
     }
 
     @AfterEach
-    public void clear() {
+    public void clear() throws DataAccessException {
         clearService.clear();
     }
 

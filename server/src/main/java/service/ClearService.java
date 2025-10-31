@@ -27,10 +27,10 @@ public class ClearService {
         return userDAO;
     }
 
-    public ClearResponse clear() {
+    public ClearResponse clear() throws DataAccessException {
+        userDAO.clear();
         authDAO.clear();
         gameDAO.clear();
-        userDAO.clear();
         return new ClearResponse(null);
     }
 }

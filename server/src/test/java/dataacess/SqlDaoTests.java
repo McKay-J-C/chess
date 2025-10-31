@@ -5,6 +5,7 @@ import dataaccess.*;
 
 import model.UserData;
 import org.junit.jupiter.api.*;
+import service.ClearService;
 
 import java.sql.SQLException;
 
@@ -15,14 +16,15 @@ public class SqlDaoTests {
     UserDAO userDAO = new SqlUserDAO();
     GameDAO gameDAO = new SqlGameDAO();
     AuthDAO authDAO = new SqlAuthDAO();
+    ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
 
     public SqlDaoTests() throws DataAccessException {
     }
 
-//    @AfterEach
-//    public void clear() {
-//        clearService.clear();
-//    }
+    @BeforeEach
+    public void clear() throws DataAccessException {
+        clearService.clear();
+    }
 
     @Test
     @Order(1)
@@ -32,6 +34,15 @@ public class SqlDaoTests {
         UserData userData = userDAO.getUser("Bob");
         UserData testUserData = new UserData("Bob", "goCougs27", "cs240@gmail.com");
         Assertions.assertEquals(userData, testUserData);
+    }
+
+    @Test
+    @Order(2)
+    @DisplayName("Unsuccessful Get User")
+    public void unsuccessfulGetUser() throws DataAccessException {
+        makeUserBob();
+        UserData userData = userDAO.getUser("hi");
+        Assertions.assertNull(userData);
     }
 
     public void makeUserBob() throws DataAccessException {

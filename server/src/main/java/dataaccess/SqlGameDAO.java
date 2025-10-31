@@ -39,8 +39,15 @@ public class SqlGameDAO implements GameDAO {
     }
 
     @Override
-    public void clear() {
-
+    public void clear() throws DataAccessException {
+        var statement = "DELETE FROM game";
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement( statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     private final String[] createStatements = {
@@ -53,8 +60,8 @@ public class SqlGameDAO implements GameDAO {
               `game` TEXT DEFAULT NULL,
               PRIMARY KEY (`gameID`),
               INDEX(gameName),
-              FOREIGN KEY (whiteUsername) REFERENCES user(username),
-              FOREIGN KEY (blackUsername) REFERENCES user(username)
+              FOREIGN KEY (whiteUsername) REFERENCES user(username) ON DELETE SET NULL,
+              FOREIGN KEY (blackUsername) REFERENCES user(username) ON DELETE SET NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };

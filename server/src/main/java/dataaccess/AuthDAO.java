@@ -26,7 +26,7 @@ public interface AuthDAO {
         return authData;
     }
 
-    default void clear() {
+    default void clear() throws DataAccessException {
     }
 
     default HashSet<AuthData> getAuths() {

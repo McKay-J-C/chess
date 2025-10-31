@@ -36,7 +36,15 @@ public class SqlAuthDAO implements AuthDAO {
     }
 
     @Override
-    public void clear() {
+    public void clear() throws DataAccessException {
+        var statement = "DELETE FROM auth";
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement( statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     @Override
@@ -52,7 +60,7 @@ public class SqlAuthDAO implements AuthDAO {
               `authToken` varchar(256) NOT NULL,
               PRIMARY KEY (`id`),
               INDEX(username),
-              FOREIGN KEY (username) REFERENCES user(username)
+              FOREIGN KEY (username) REFERENCES user(username) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
