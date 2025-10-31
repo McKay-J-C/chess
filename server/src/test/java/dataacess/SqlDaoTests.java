@@ -51,10 +51,22 @@ public class SqlDaoTests {
     @Order(3)
     @DisplayName("Successful Create User")
     public void successfulCreateUser() throws DataAccessException, SQLException {
-        userDAO.createUser("Bob", "goCougs27", "cs240@gmail.com");
+        createBob();
         UserData userData = userDAO.getUser("Bob");
         UserData testUserData = new UserData("Bob", "goCougs27", "cs240@gmail.com");
         assertEquivalentUsers(userData, testUserData);
+    }
+
+    @Test
+    @Order(4)
+    @DisplayName("Taken Create User")
+    public void takenCreateUser() throws DataAccessException, SQLException {
+        createBob();
+        Assertions.assertThrows(DataAccessException.AlreadyTakenException.class, this::createBob);
+    }
+
+    public void createBob() throws DataAccessException, SQLException {
+        userDAO.createUser("Bob", "goCougs27", "cs240@gmail.com");
     }
 
     public void makeUserBob() throws DataAccessException {
