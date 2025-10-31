@@ -31,8 +31,6 @@ public class SqlAuthDAO implements AuthDAO {
             return auth;
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
         }
     }
 

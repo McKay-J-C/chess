@@ -121,10 +121,22 @@ public class SqlDaoTests {
         Assertions.assertNull(authDAO.getAuth("hi"));
     }
 
-//    @Test
-//    @Order(9)
-//    @DisplayName("Successful Create Auth")
-//    public void createAuth()
+    @Test
+    @Order(10)
+    @DisplayName("Successful Create Auth")
+    public void successfulCreateAuth() throws DataAccessException, SQLException {
+        createBob();
+        AuthData authData = authDAO.createAuth("Bob");
+        AuthData foundAuthData = authDAO.getAuth(authData.authToken());
+        Assertions.assertEquals(authData, foundAuthData);
+    }
+
+    @Test
+    @Order(11)
+    @DisplayName("No User Create Auth")
+    public void noUserCreateAuth() throws DataAccessException, SQLException {
+        Assertions.assertThrows(DataAccessException.class, () -> authDAO.createAuth("Bob"));
+    }
 
     public void createBob() throws DataAccessException, SQLException {
         userDAO.createUser("Bob", "goCougs27", "cs240@gmail.com");
