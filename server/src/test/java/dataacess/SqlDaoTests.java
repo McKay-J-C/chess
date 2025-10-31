@@ -88,6 +88,18 @@ public class SqlDaoTests {
         Assertions.assertNull(userDAO.getUsers());
     }
 
+    @Test
+    @Order(7)
+    @DisplayName("User Clear")
+    public void testUserClear() throws DataAccessException, SQLException {
+        createBob();
+        createDave();
+        userDAO.clear();
+        Assertions.assertNull(userDAO.getUsers());
+        Assertions.assertNull(userDAO.getUser("Bob"));
+        Assertions.assertNull(userDAO.getUser("Dave"));
+    }
+
     public void createBob() throws DataAccessException, SQLException {
         userDAO.createUser("Bob", "goCougs27", "cs240@gmail.com");
     }
