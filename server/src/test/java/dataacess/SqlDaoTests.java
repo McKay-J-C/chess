@@ -88,7 +88,7 @@ public class SqlDaoTests {
     @Test
     @Order(6)
     @DisplayName("Unsuccessful Get Users")
-    public void noUsersGetUsers() throws DataAccessException, SQLException {
+    public void noUsersGetUsers() throws DataAccessException {
         Assertions.assertNull(userDAO.getUsers());
     }
 
@@ -107,7 +107,7 @@ public class SqlDaoTests {
     @Test
     @Order(8)
     @DisplayName("Successful Get Auth")
-    public void successfulGetAuth() throws DataAccessException, SQLException {
+    public void successfulGetAuth() throws DataAccessException {
         makeUserBob();
         makeBobAuth();
         AuthData testAuth = new AuthData("BobsAuth", "Bob");
@@ -118,7 +118,7 @@ public class SqlDaoTests {
     @Test
     @Order(9)
     @DisplayName("Unsuccessful Get Auth")
-    public void unsuccessfulGetAuth() throws DataAccessException, SQLException {
+    public void unsuccessfulGetAuth() throws DataAccessException {
         makeUserBob();
         makeBobAuth();
         Assertions.assertNull(authDAO.getAuth("hi"));
@@ -136,7 +136,7 @@ public class SqlDaoTests {
     @Test
     @Order(11)
     @DisplayName("No User Create Auth")
-    public void noUserCreateAuth() throws DataAccessException, SQLException {
+    public void noUserCreateAuth() {
         Assertions.assertThrows(DataAccessException.class, () -> authDAO.createAuth("Bob"));
     }
 
@@ -157,7 +157,7 @@ public class SqlDaoTests {
     @Test
     @Order(13)
     @DisplayName("Unsuccessful Get Auths")
-    public void noAuthGetAuths() throws DataAccessException, SQLException {
+    public void noAuthGetAuths() throws DataAccessException {
         Assertions.assertNull(authDAO.getAuths());
     }
 

@@ -16,7 +16,7 @@ public class SqlUserDAO implements UserDAO {
     }
 
     @Override
-    public AuthData createUser(String username, String password, String email) throws SQLException, DataAccessException {
+    public AuthData createUser(String username, String password, String email) throws DataAccessException {
         if (getUser(username) != null) {
             throw new DataAccessException.AlreadyTakenException("Error: already taken");
         }
