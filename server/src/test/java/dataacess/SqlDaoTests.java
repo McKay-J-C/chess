@@ -55,7 +55,7 @@ public class SqlDaoTests {
     @Test
     @Order(3)
     @DisplayName("Successful Create User")
-    public void successfulCreateUser() throws DataAccessException, SQLException {
+    public void successfulCreateUser() throws DataAccessException {
         createBob();
         UserData userData = userDAO.getUser("Bob");
         UserData testUserData = new UserData("Bob", "goCougs27", "cs240@gmail.com");
@@ -65,7 +65,7 @@ public class SqlDaoTests {
     @Test
     @Order(4)
     @DisplayName("Taken Create User")
-    public void takenCreateUser() throws DataAccessException, SQLException {
+    public void takenCreateUser() throws DataAccessException {
         createBob();
         Assertions.assertThrows(DataAccessException.AlreadyTakenException.class, this::createBob);
     }
@@ -73,7 +73,7 @@ public class SqlDaoTests {
     @Test
     @Order(5)
     @DisplayName("Successful Get Users")
-    public void successfulGetUsers() throws DataAccessException, SQLException {
+    public void successfulGetUsers() throws DataAccessException {
         createBob();
         createDave();
         HashSet<UserData> userData = userDAO.getUsers();
@@ -95,7 +95,7 @@ public class SqlDaoTests {
     @Test
     @Order(7)
     @DisplayName("User Clear")
-    public void testUserClear() throws DataAccessException, SQLException {
+    public void testUserClear() throws DataAccessException {
         createBob();
         createDave();
         userDAO.clear();
@@ -349,12 +349,12 @@ public class SqlDaoTests {
         Assertions.assertNull(gameDAO.getGame(2));
     }
 
-    public AuthData createBobAndAuth() throws SQLException, DataAccessException {
+    public AuthData createBobAndAuth() throws DataAccessException {
         createBob();
         return authDAO.createAuth("Bob");
     }
 
-    public AuthData createDaveAndAuth() throws SQLException, DataAccessException {
+    public AuthData createDaveAndAuth() throws DataAccessException {
         createDave();
         return authDAO.createAuth("Dave");
     }

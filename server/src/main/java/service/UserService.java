@@ -8,9 +8,6 @@ import model.UserData;
 import response.*;
 import request.*;
 
-import java.sql.SQLException;
-
-
 public class UserService {
 
     private final UserDAO userDAO;
