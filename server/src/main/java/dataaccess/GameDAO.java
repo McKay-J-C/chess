@@ -11,7 +11,7 @@ public interface GameDAO {
         return 1;
     }
 
-    default GameData getGame(int gameID) {
+    default GameData getGame(int gameID) throws DataAccessException {
         return new GameData(1, "", "", "", new ChessGame());
     }
 

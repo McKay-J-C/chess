@@ -1,13 +1,20 @@
 package dataaccess;
 
 import chess.ChessGame;
+import com.google.gson.Gson;
+import model.AuthData;
 import model.GameData;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 
 public class SqlGameDAO implements GameDAO {
+
+    private final Gson serializer = new Gson();
+    private int curID;
 
     public SqlGameDAO() throws DataAccessException {
         configureDatabase();
@@ -19,8 +26,27 @@ public class SqlGameDAO implements GameDAO {
     }
 
     @Override
-    public GameData getGame(int gameID) {
-        return new GameData(1, "", "", "", new ChessGame());
+    public GameData getGame(int gameID) throws DataAccessException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT * FROM game WHERE gameID=?";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.setInt(1, gameID);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String gameName = rs.getString("gameName");
+                        String whiteUsername = rs.getString("whiteUsername");
+                        String blackUsername = rs.getString("blackUsername");
+                        String gameJson = rs.getString("game");
+
+                        ChessGame game = serializer.fromJson(gameJson, ChessGame.class);
+                        return new GameData(gameID, whiteUsername, blackUsername, gameName, game);
+                    }
+                }
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new DataAccessException("Error in finding auth");
+        }
+        return null;
     }
 
     @Override
@@ -53,7 +79,7 @@ public class SqlGameDAO implements GameDAO {
     private final String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS game (
-              `gameID` int NOT NULL AUTO_INCREMENT,
+              `gameID` int NOT NULL,
               `gameName` varchar(256) NOT NULL,
               `whiteUsername` varchar(256) NULL,
               `blackUsername` varchar(256) NULL,

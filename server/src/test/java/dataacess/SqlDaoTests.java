@@ -1,9 +1,12 @@
 package dataacess;
 
 
+import chess.ChessGame;
+import com.google.gson.Gson;
 import dataaccess.*;
 
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
 import org.mindrot.jbcrypt.BCrypt;
@@ -192,12 +195,46 @@ public class SqlDaoTests {
     @Order(16)
     @DisplayName("Unsuccessful Authorize")
     public void unsuccessfulAuthorize() throws DataAccessException, SQLException {
-        AuthData bobAuth = createBobAndAuth();
-        AuthData daveAuth = createDaveAndAuth();
+        createBobAndAuth();
+        createDaveAndAuth();
 
         Assertions.assertThrows(DataAccessException.UnauthorizedException.class, () -> authDAO.authorize("hi"));
         Assertions.assertThrows(DataAccessException.UnauthorizedException.class, () -> authDAO.authorize("your mom"));
     }
+
+    @Test
+    @Order(17)
+    @DisplayName("Auth Clear")
+    public void testAuthClear() throws DataAccessException, SQLException {
+        createBobAndAuth();
+        createDaveAndAuth();
+        authDAO.clear();
+        Assertions.assertNull(authDAO.getAuths());
+        Assertions.assertNull(authDAO.getAuth("Bob"));
+        Assertions.assertNull(authDAO.getAuth("Dave"));
+    }
+
+    @Test
+    @Order(18)
+    @DisplayName("Successful Get Game")
+    public void successfulGetGame() throws DataAccessException, SQLException {
+        createBobAndAuth();
+        makeBobGame();
+        GameData testGameData = new GameData(1, "Bob", null, "Bobs Game", new ChessGame());
+        GameData foundGameData = gameDAO.getGame(1);
+        Assertions.assertEquals(testGameData, foundGameData);
+    }
+
+    @Test
+    @Order(18)
+    @DisplayName("Wrong GameID Get Game")
+    public void wrongIdGetGame() throws DataAccessException, SQLException {
+        createBobAndAuth();
+        makeBobGame();
+        Assertions.assertNull(gameDAO.getGame(9));
+    }
+
+
 
     public AuthData createBobAndAuth() throws SQLException, DataAccessException {
         createBob();
@@ -237,6 +274,24 @@ public class SqlDaoTests {
             var preparedStatement = conn.prepareStatement(statement);
             preparedStatement.setString(1, "Bob");
             preparedStatement.setString(2, "BobsAuth");
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void makeBobGame() throws DataAccessException {
+        String statement = "INSERT INTO game (gameID, whiteUsername, gameName, game) VALUES (?,?,?,?)";
+        try (var conn = DatabaseManager.getConnection()) {
+            var preparedStatement = conn.prepareStatement(statement);
+            preparedStatement.setInt(1, 1);
+            preparedStatement.setString(2, "Bob");
+            preparedStatement.setString(3, "Bobs Game");
+
+            ChessGame game = new ChessGame();
+            var serializer = new Gson();
+            var gameJson = serializer.toJson(game);
+            preparedStatement.setString(4, gameJson);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
