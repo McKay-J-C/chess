@@ -9,7 +9,7 @@ import java.util.HashSet;
 public interface UserDAO {
 
 
-    default AuthData createUser(String username, String password, String email) throws SQLException, DataAccessException {
+    default AuthData createUser(String username, String password, String email) throws DataAccessException {
         return null;
     }
 
