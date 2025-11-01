@@ -127,7 +127,7 @@ public class SqlDaoTests {
     @Test
     @Order(10)
     @DisplayName("Successful Create Auth")
-    public void successfulCreateAuth() throws DataAccessException, SQLException {
+    public void successfulCreateAuth() throws DataAccessException {
         AuthData authData = createBobAndAuth();
         AuthData foundAuthData = authDAO.getAuth(authData.authToken());
         Assertions.assertEquals(authData, foundAuthData);
@@ -143,7 +143,7 @@ public class SqlDaoTests {
     @Test
     @Order(12)
     @DisplayName("Successful Get Auths")
-    public void successfulGetAuths() throws DataAccessException, SQLException {
+    public void successfulGetAuths() throws DataAccessException {
         AuthData bobAuth = createBobAndAuth();
         AuthData daveAuth = createDaveAndAuth();
         HashSet<AuthData> authData = authDAO.getAuths();
@@ -164,7 +164,7 @@ public class SqlDaoTests {
     @Test
     @Order(14)
     @DisplayName("Successful Delete Auth")
-    public void successfulDeleteAuth() throws DataAccessException, SQLException {
+    public void successfulDeleteAuth() throws DataAccessException {
         AuthData bobAuth = createBobAndAuth();
         authDAO.deleteAuth(bobAuth);
         Assertions.assertNull(authDAO.getAuth(bobAuth.authToken()));
@@ -173,7 +173,7 @@ public class SqlDaoTests {
     @Test
     @Order(15)
     @DisplayName("Wrong AuthToken Delete Auth")
-    public void wrongAuthDeleteAuth() throws DataAccessException, SQLException {
+    public void wrongAuthDeleteAuth() throws DataAccessException {
         AuthData bobAuth = createBobAndAuth();
         AuthData authData = new AuthData("Bob", "hi");
         authDAO.deleteAuth(authData);
@@ -183,7 +183,7 @@ public class SqlDaoTests {
     @Test
     @Order(16)
     @DisplayName("Successful Authorize")
-    public void successfulAuthorize() throws DataAccessException, SQLException {
+    public void successfulAuthorize() throws DataAccessException {
         AuthData bobAuth = createBobAndAuth();
         AuthData daveAuth = createDaveAndAuth();
 
@@ -194,7 +194,7 @@ public class SqlDaoTests {
     @Test
     @Order(16)
     @DisplayName("Unsuccessful Authorize")
-    public void unsuccessfulAuthorize() throws DataAccessException, SQLException {
+    public void unsuccessfulAuthorize() throws DataAccessException {
         createBobAndAuth();
         createDaveAndAuth();
 
@@ -205,7 +205,7 @@ public class SqlDaoTests {
     @Test
     @Order(17)
     @DisplayName("Auth Clear")
-    public void testAuthClear() throws DataAccessException, SQLException {
+    public void testAuthClear() throws DataAccessException {
         createBobAndAuth();
         createDaveAndAuth();
         authDAO.clear();
@@ -217,7 +217,7 @@ public class SqlDaoTests {
     @Test
     @Order(18)
     @DisplayName("Successful Get Game")
-    public void successfulGetGame() throws DataAccessException, SQLException {
+    public void successfulGetGame() throws DataAccessException {
         createBobAndAuth();
         makeBobGame();
         GameData testGameData = new GameData(1, "Bob", null, "Bobs Game", new ChessGame());
@@ -228,7 +228,7 @@ public class SqlDaoTests {
     @Test
     @Order(18)
     @DisplayName("Wrong GameID Get Game")
-    public void wrongIdGetGame() throws DataAccessException, SQLException {
+    public void wrongIdGetGame() throws DataAccessException {
         createBobAndAuth();
         makeBobGame();
         Assertions.assertNull(gameDAO.getGame(9));
@@ -237,7 +237,7 @@ public class SqlDaoTests {
     @Test
     @Order(19)
     @DisplayName("Successful Create Game")
-    public void successfulCreateGame() throws DataAccessException, SQLException {
+    public void successfulCreateGame() throws DataAccessException {
         createBobAndAuth();
         int gameID = gameDAO.addGame("Bobs game");
         GameData gameData = gameDAO.getGame(gameID);
@@ -249,7 +249,7 @@ public class SqlDaoTests {
     @Test
     @Order(20)
     @DisplayName("Successful Get Games")
-    public void successfulGetGames() throws DataAccessException, SQLException {
+    public void successfulGetGames() throws DataAccessException {
         createBobAndAuth();
         createDaveAndAuth();
         gameDAO.addGame("Bobs game");
@@ -267,7 +267,7 @@ public class SqlDaoTests {
     @Test
     @Order(20)
     @DisplayName("No Games Get Games")
-    public void noGamesGetGames() throws DataAccessException, SQLException {
+    public void noGamesGetGames() throws DataAccessException {
         createBobAndAuth();
         createDaveAndAuth();
         HashSet<GameData> gameData = gameDAO.getGames();
@@ -277,7 +277,7 @@ public class SqlDaoTests {
     @Test
     @Order(21)
     @DisplayName("Successful Update Game")
-    public void successfulUpdateGame() throws DataAccessException, SQLException {
+    public void successfulUpdateGame() throws DataAccessException {
         createBobAndAuth();
         createDaveAndAuth();
         int gameID = gameDAO.addGame("Bobs game");
@@ -296,7 +296,7 @@ public class SqlDaoTests {
     @Test
     @Order(22)
     @DisplayName("Player Taken Update Game")
-    public void playerTakenUpdateGame() throws SQLException, DataAccessException {
+    public void playerTakenUpdateGame() throws DataAccessException {
         createBobAndAuth();
         createDaveAndAuth();
         int gameID = gameDAO.addGame("Bobs game");
@@ -309,7 +309,7 @@ public class SqlDaoTests {
     @Test
     @Order(23)
     @DisplayName("Game Does Not Exist Update Game")
-    public void gameNoExistUpdateGame() throws DataAccessException, SQLException {
+    public void gameNoExistUpdateGame() throws DataAccessException {
         createBobAndAuth();
         createDaveAndAuth();
         gameDAO.addGame("Bobs game");
@@ -321,7 +321,7 @@ public class SqlDaoTests {
     @Test
     @Order(24)
     @DisplayName("User Does Not Exist Update Game")
-    public void userNoExistUpdateGame() throws DataAccessException, SQLException {
+    public void userNoExistUpdateGame() throws DataAccessException {
         createBobAndAuth();
         gameDAO.addGame("Bobs game");
 
@@ -332,7 +332,7 @@ public class SqlDaoTests {
     @Test
     @Order(25)
     @DisplayName("Game Clear")
-    public void testGameClear() throws DataAccessException, SQLException {
+    public void testGameClear() throws DataAccessException {
         createBobAndAuth();
         createDaveAndAuth();
         gameDAO.addGame("Bobs game");
