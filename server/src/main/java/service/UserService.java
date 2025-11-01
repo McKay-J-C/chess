@@ -29,7 +29,7 @@ public class UserService {
         return authDAO;
     }
 
-    public RegisterResponse register(RegisterRequest registerRequest) throws DataAccessException, DataAccessException.AlreadyTakenException, SQLException {
+    public RegisterResponse register(RegisterRequest registerRequest) throws DataAccessException, DataAccessException.AlreadyTakenException {
         String username = registerRequest.username();
         String password = registerRequest.password();
         String email = registerRequest.email();

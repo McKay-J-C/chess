@@ -359,11 +359,11 @@ public class SqlDaoTests {
         return authDAO.createAuth("Dave");
     }
 
-    public void createBob() throws DataAccessException, SQLException {
+    public void createBob() throws DataAccessException {
         userDAO.createUser("Bob", "goCougs27", "cs240@gmail.com");
     }
 
-    public void createDave() throws DataAccessException, SQLException {
+    public void createDave() throws DataAccessException {
         userDAO.createUser("Dave", "yourmom", "hi@gmail.com");
     }
 
