@@ -46,7 +46,7 @@ public class UserService {
         if (user == null) {
             throw new DataAccessException.UnauthorizedException("Error: username not found");
         }
-        if (!user.password().equals(password)) {
+        if (!userDAO.verifyUser(username, password)) {
             throw new DataAccessException.UnauthorizedException("Error: incorrect password");
         }
 
