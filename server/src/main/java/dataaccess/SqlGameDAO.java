@@ -13,7 +13,22 @@ public class SqlGameDAO implements GameDAO {
     private int curID;
 
     public SqlGameDAO() throws DataAccessException {
-        configureDatabase();
+        String[] createStatements = {
+                """
+            CREATE TABLE IF NOT EXISTS game (
+              `gameID` int NOT NULL,
+              `gameName` varchar(256) NOT NULL,
+              `whiteUsername` varchar(256) NULL,
+              `blackUsername` varchar(256) NULL,
+              `game` TEXT DEFAULT NULL,
+              PRIMARY KEY (`gameID`),
+              INDEX(gameName),
+              FOREIGN KEY (whiteUsername) REFERENCES user(username) ON DELETE SET NULL,
+              FOREIGN KEY (blackUsername) REFERENCES user(username) ON DELETE SET NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """
+        };
+        DatabaseManager.configureDatabase(createStatements);
     }
 
     @Override
@@ -150,32 +165,4 @@ public class SqlGameDAO implements GameDAO {
         }
     }
 
-    private final String[] createStatements = {
-            """
-            CREATE TABLE IF NOT EXISTS game (
-              `gameID` int NOT NULL,
-              `gameName` varchar(256) NOT NULL,
-              `whiteUsername` varchar(256) NULL,
-              `blackUsername` varchar(256) NULL,
-              `game` TEXT DEFAULT NULL,
-              PRIMARY KEY (`gameID`),
-              INDEX(gameName),
-              FOREIGN KEY (whiteUsername) REFERENCES user(username) ON DELETE SET NULL,
-              FOREIGN KEY (blackUsername) REFERENCES user(username) ON DELETE SET NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """
-    };
-
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (Connection conn = DatabaseManager.getConnection()) {
-            for (String statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DataAccessException("Error: error in configuring database");
-        }
-    }
 }

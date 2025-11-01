@@ -13,7 +13,20 @@ import static model.AuthData.generateToken;
 public class SqlAuthDAO implements AuthDAO {
 
     public SqlAuthDAO() throws DataAccessException {
-        configureDatabase();
+        String[] createStatements = {
+                """
+            CREATE TABLE IF NOT EXISTS auth (
+              `id` int NOT NULL AUTO_INCREMENT,
+              `authToken` varchar(256) NOT NULL,
+              `username` varchar(256) NOT NULL,
+              PRIMARY KEY (`id`),
+              INDEX(authToken),
+              INDEX(username),
+              FOREIGN KEY (username) REFERENCES user(username) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """
+        };
+        DatabaseManager.configureDatabase(createStatements);
     }
 
     @Override
@@ -106,30 +119,4 @@ public class SqlAuthDAO implements AuthDAO {
         return auths;
     }
 
-    private final String[] createStatements = {
-            """
-            CREATE TABLE IF NOT EXISTS auth (
-              `id` int NOT NULL AUTO_INCREMENT,
-              `authToken` varchar(256) NOT NULL,
-              `username` varchar(256) NOT NULL,
-              PRIMARY KEY (`id`),
-              INDEX(authToken),
-              INDEX(username),
-              FOREIGN KEY (username) REFERENCES user(username) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """
-    };
-
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (Connection conn = DatabaseManager.getConnection()) {
-            for (String statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DataAccessException("Error: error in configuring database");
-        }
-    }
 }
