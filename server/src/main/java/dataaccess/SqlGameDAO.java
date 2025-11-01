@@ -2,7 +2,6 @@ package dataaccess;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import model.AuthData;
 import model.GameData;
 
 import java.sql.*;
@@ -38,7 +37,7 @@ public class SqlGameDAO implements GameDAO {
             preparedStatement.executeUpdate();
             return gameID;
         } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
+            throw new DataAccessException("Error: Database access error");
         }
     }
 
@@ -61,7 +60,7 @@ public class SqlGameDAO implements GameDAO {
                 }
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException("Error in finding auth");
+            throw new DataAccessException("Error: error in finding auth");
         }
         return null;
     }
@@ -86,10 +85,7 @@ public class SqlGameDAO implements GameDAO {
                 }
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException("Error in finding users");
-        }
-        if (games.isEmpty()) {
-            return null;
+            throw new DataAccessException("Error: error in finding users");
         }
         return games;
     }
@@ -98,18 +94,18 @@ public class SqlGameDAO implements GameDAO {
     public void updateGame(int gameID, ChessGame.TeamColor teamColor, String username) throws DataAccessException {
         GameData gameData = getGame(gameID);
         if (gameData == null) {
-            throw new DataAccessException("Game not found");
+            throw new DataAccessException("Error: Game not found");
         }
         GameData newGameData;
         if (teamColor == ChessGame.TeamColor.WHITE) {
             if (gameData.whiteUsername() != null) {
-                throw new DataAccessException.AlreadyTakenException("White player already taken");
+                throw new DataAccessException.AlreadyTakenException("Error: White player already taken");
             }
             newGameData = new GameData(
                     gameID, username, gameData.blackUsername(), gameData.gameName(), gameData.game());
         } else {
             if (gameData.blackUsername() != null) {
-                throw new DataAccessException.AlreadyTakenException("Black player already taken");
+                throw new DataAccessException.AlreadyTakenException("Error: Black player already taken");
             }
             newGameData = new GameData(
                     gameID, gameData.whiteUsername(), username, gameData.gameName(), gameData.game());
@@ -117,7 +113,7 @@ public class SqlGameDAO implements GameDAO {
         deleteThenAddGame(newGameData);
     }
 
-    private void deleteThenAddGame(GameData newGameData) {
+    private void deleteThenAddGame(GameData newGameData) throws DataAccessException {
         var delStatement = "DELETE FROM game WHERE gameID=?";
         try (var conn = DatabaseManager.getConnection()) {
             try (var delPreparedStatement = conn.prepareStatement(delStatement)) {
@@ -137,7 +133,7 @@ public class SqlGameDAO implements GameDAO {
                 addPreparedStatement.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Error: problem in updating game");
         }
     }
 
@@ -150,7 +146,7 @@ public class SqlGameDAO implements GameDAO {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException(e.getMessage());
+            throw new DataAccessException("Error: error in deleting games");
         }
     }
 
@@ -179,7 +175,7 @@ public class SqlGameDAO implements GameDAO {
                 }
             }
         } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+            throw new DataAccessException("Error: error in configuring database");
         }
     }
 }

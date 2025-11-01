@@ -26,6 +26,7 @@ public interface UserDAO {
     }
 
     default boolean verifyUser(String username, String providedClearTextPassword) throws DataAccessException {
-        return false;
+        return username.equals(providedClearTextPassword);
     }
+
 }

@@ -28,7 +28,7 @@ public class SqlAuthDAO implements AuthDAO {
             preparedStatement.executeUpdate();
             return auth;
         } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
+            throw new DataAccessException("Error: error in inserting auth");
         }
     }
 
@@ -47,7 +47,7 @@ public class SqlAuthDAO implements AuthDAO {
                 }
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException("Error in finding auth");
+            throw new DataAccessException("Error: error in finding auth");
         }
         return null;
     }
@@ -61,7 +61,7 @@ public class SqlAuthDAO implements AuthDAO {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException(e.getMessage());
+            throw new DataAccessException("Error: error deleting auth");
         }
     }
 
@@ -82,7 +82,7 @@ public class SqlAuthDAO implements AuthDAO {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException(e.getMessage());
+            throw new DataAccessException("Error: error in deleting auths");
         }
     }
 
@@ -101,10 +101,7 @@ public class SqlAuthDAO implements AuthDAO {
                 }
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException("Error in finding users");
-        }
-        if (auths.isEmpty()) {
-            return null;
+            throw new DataAccessException("Error: error in finding users");
         }
         return auths;
     }
@@ -132,7 +129,7 @@ public class SqlAuthDAO implements AuthDAO {
                 }
             }
         } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+            throw new DataAccessException("Error: error in configuring database");
         }
     }
 }

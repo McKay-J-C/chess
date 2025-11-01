@@ -25,7 +25,12 @@ public class ServiceTests {
     }
 
     @AfterEach
-    public void clear() throws DataAccessException {
+    public void clearAfter() throws DataAccessException {
+        clearService.clear();
+    }
+
+    @BeforeEach
+    public void clearBefore() throws DataAccessException {
         clearService.clear();
     }
 
@@ -36,7 +41,10 @@ public class ServiceTests {
         RegisterResponse foundResponse =  registerBob();
         UserData foundUser = userService.getUserDAO().getUser("Bob");
         UserData testUser = new UserData("Bob", "goCougs27", "mjc2021@byu.edu");
-        Assertions.assertEquals(testUser, foundUser);
+
+        Assertions.assertEquals(testUser.username(), foundUser.username());
+        Assertions.assertEquals(testUser.email(), foundUser.email());
+        Assertions.assertTrue(userService.getUserDAO().verifyUser("Bob", "goCougs27"));
 
         AuthData testResponse = new AuthData("", "Bob");
         Assertions.assertEquals(testResponse.username(), foundResponse.username());
@@ -151,6 +159,8 @@ public class ServiceTests {
         Assertions.assertEquals(new HashSet<>(), listGamesResponse.games());
 
         makeBobsGame(authToken);
+        listGamesResponse = gameService.listGames(listGamesRequest);
+
         HashSet<GameData> testGameData = new HashSet<>();
         GameData testGame = new GameData(
                 1, null, null, "Bob's game", new ChessGame());

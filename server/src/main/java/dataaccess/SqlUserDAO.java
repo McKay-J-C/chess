@@ -33,7 +33,7 @@ public class SqlUserDAO implements UserDAO {
             AuthDAO authDAO = new SqlAuthDAO();
             return authDAO.createAuth(username);
         } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
+            throw new DataAccessException("Error: problem creating user");
         }
     }
 
@@ -53,7 +53,7 @@ public class SqlUserDAO implements UserDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error in finding user");
+            throw new DataAccessException("Error: error in finding user");
         }
         return null;
     }
@@ -66,7 +66,7 @@ public class SqlUserDAO implements UserDAO {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException(e.getMessage());
+            throw new DataAccessException("Error: error in deleting users");
         }
     }
 
@@ -86,10 +86,7 @@ public class SqlUserDAO implements UserDAO {
                 }
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException("Error in finding users");
-        }
-        if (users.isEmpty()) {
-            return null;
+            throw new DataAccessException("Error: error in finding users");
         }
         return users;
     }
@@ -118,7 +115,7 @@ public class SqlUserDAO implements UserDAO {
                 }
             }
         } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+            throw new DataAccessException("Error: error in configuring database");
         }
     }
 
@@ -128,7 +125,7 @@ public class SqlUserDAO implements UserDAO {
         UserDAO userDAO = new SqlUserDAO();
         UserData userData = userDAO.getUser(username);
         if (userData == null) {
-            throw new DataAccessException("Username not found");
+            throw new DataAccessException("Error: Username not found");
         }
         String hashedPassword = userData.password();
         return BCrypt.checkpw(providedClearTextPassword, hashedPassword);
