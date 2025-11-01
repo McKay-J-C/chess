@@ -257,7 +257,7 @@ public class SqlDaoTests {
 
         GameData testBobGame = new GameData(1, null, null, "Bobs game", new ChessGame());
         GameData testDaveGame = new GameData(2, null, null, "Daves game", new ChessGame());
-        HashSet<GameData> gameData = gameDAO.listGames();
+        HashSet<GameData> gameData = gameDAO.getGames();
 
         Assertions.assertTrue(gameData.contains(testBobGame));
         Assertions.assertTrue(gameData.contains(testDaveGame));
@@ -270,8 +270,83 @@ public class SqlDaoTests {
     public void noGamesGetGames() throws DataAccessException, SQLException {
         createBobAndAuth();
         createDaveAndAuth();
-        HashSet<GameData> gameData = gameDAO.listGames();
+        HashSet<GameData> gameData = gameDAO.getGames();
         Assertions.assertNull(gameData);
+    }
+
+    @Test
+    @Order(21)
+    @DisplayName("Successful Update Game")
+    public void successfulUpdateGame() throws DataAccessException, SQLException {
+        createBobAndAuth();
+        createDaveAndAuth();
+        int gameID = gameDAO.addGame("Bobs game");
+        gameDAO.updateGame(gameID, ChessGame.TeamColor.WHITE, "Bob");
+
+        GameData gameData1 = gameDAO.getGame(gameID);
+        GameData testGameData1 = new GameData(1, "Bob", null, "Bobs game", new ChessGame());
+        Assertions.assertEquals(testGameData1, gameData1);
+
+        gameDAO.updateGame(gameID, ChessGame.TeamColor.BLACK, "Dave");
+        GameData gameData2 = gameDAO.getGame(gameID);
+        GameData testGameData2 = new GameData(1, "Bob", "Dave", "Bobs game", new ChessGame());
+        Assertions.assertEquals(testGameData2, gameData2);
+    }
+
+    @Test
+    @Order(22)
+    @DisplayName("Player Taken Update Game")
+    public void playerTakenUpdateGame() throws SQLException, DataAccessException {
+        createBobAndAuth();
+        createDaveAndAuth();
+        int gameID = gameDAO.addGame("Bobs game");
+        gameDAO.updateGame(gameID, ChessGame.TeamColor.WHITE, "Bob");
+
+        Assertions.assertThrows(DataAccessException.AlreadyTakenException.class,
+                () -> gameDAO.updateGame(gameID, ChessGame.TeamColor.WHITE, "Dave"));
+    }
+
+    @Test
+    @Order(23)
+    @DisplayName("Game Does Not Exist Update Game")
+    public void gameNoExistUpdateGame() throws DataAccessException, SQLException {
+        createBobAndAuth();
+        createDaveAndAuth();
+        gameDAO.addGame("Bobs game");
+
+        Assertions.assertThrows(DataAccessException.class,
+                () -> gameDAO.updateGame(7, ChessGame.TeamColor.WHITE, "Bob"));
+    }
+
+    @Test
+    @Order(24)
+    @DisplayName("User Does Not Exist Update Game")
+    public void userNoExistUpdateGame() throws DataAccessException, SQLException {
+        createBobAndAuth();
+        gameDAO.addGame("Bobs game");
+
+        Assertions.assertThrows(DataAccessException.class,
+                () -> gameDAO.updateGame(7, ChessGame.TeamColor.WHITE, "Dave"));
+    }
+
+    @Test
+    @Order(25)
+    @DisplayName("Game Clear")
+    public void testGameClear() throws DataAccessException, SQLException {
+        createBobAndAuth();
+        createDaveAndAuth();
+        gameDAO.addGame("Bobs game");
+        gameDAO.addGame("Daves game");
+
+        gameDAO.updateGame(1, ChessGame.TeamColor.WHITE, "Bob");
+        gameDAO.updateGame(1, ChessGame.TeamColor.BLACK, "Dave");
+        gameDAO.updateGame(2, ChessGame.TeamColor.WHITE, "Dave");
+        gameDAO.updateGame(2, ChessGame.TeamColor.BLACK, "Bob");
+        gameDAO.clear();
+
+        Assertions.assertNull(gameDAO.getGames());
+        Assertions.assertNull(gameDAO.getGame(1));
+        Assertions.assertNull(gameDAO.getGame(2));
     }
 
     public AuthData createBobAndAuth() throws SQLException, DataAccessException {

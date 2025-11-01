@@ -15,16 +15,12 @@ public interface GameDAO {
         return new GameData(1, "", "", "", new ChessGame());
     }
 
-    default HashSet<GameData> listGames() throws DataAccessException {
+    default HashSet<GameData> getGames() throws DataAccessException {
         return new HashSet<>();
     }
 
-    default void updateGame(int gameID, ChessGame.TeamColor teamColor, String username) {
+    default void updateGame(int gameID, ChessGame.TeamColor teamColor, String username) throws DataAccessException {
 
-    }
-
-    default HashSet<GameData> getGames() {
-        return new HashSet<>();
     }
 
     default void clear() throws DataAccessException {

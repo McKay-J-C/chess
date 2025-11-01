@@ -5,10 +5,7 @@ import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.HashSet;
 
 public class SqlGameDAO implements GameDAO {
@@ -23,21 +20,23 @@ public class SqlGameDAO implements GameDAO {
     @Override
     public int addGame(String gameName) throws DataAccessException {
         curID++;
+        return addGame(curID, gameName, null, null, new ChessGame());
+    }
 
+    private int addGame(int gameID, String gameName, String whiteUsername, String blackUsername, ChessGame game) throws DataAccessException {
         String statement = "INSERT INTO game (gameID, whiteUsername, blackUsername, gameName, game) VALUES (?,?,?,?,?)";
         try (var conn = DatabaseManager.getConnection()) {
             var preparedStatement = conn.prepareStatement(statement);
-            preparedStatement.setInt(1, curID);
-            preparedStatement.setString(2, null);
-            preparedStatement.setString(3, null);
+            preparedStatement.setInt(1, gameID);
+            preparedStatement.setString(2, whiteUsername);
+            preparedStatement.setString(3, blackUsername);
             preparedStatement.setString(4, gameName);
 
-            ChessGame game = new ChessGame();
             String gameJson = serializer.toJson(game);
             preparedStatement.setString(5, gameJson);
 
             preparedStatement.executeUpdate();
-            return curID;
+            return gameID;
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
@@ -68,7 +67,7 @@ public class SqlGameDAO implements GameDAO {
     }
 
     @Override
-    public HashSet<GameData> listGames() throws DataAccessException {
+    public HashSet<GameData> getGames() throws DataAccessException {
         HashSet<GameData> games = new HashSet<>();
         try (Connection conn = DatabaseManager.getConnection()) {
             var statement = "SELECT * FROM game";
@@ -96,13 +95,50 @@ public class SqlGameDAO implements GameDAO {
     }
 
     @Override
-    public void updateGame(int gameID, ChessGame.TeamColor teamColor, String username) {
-
+    public void updateGame(int gameID, ChessGame.TeamColor teamColor, String username) throws DataAccessException {
+        GameData gameData = getGame(gameID);
+        if (gameData == null) {
+            throw new DataAccessException("Game not found");
+        }
+        GameData newGameData;
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            if (gameData.whiteUsername() != null) {
+                throw new DataAccessException.AlreadyTakenException("White player already taken");
+            }
+            newGameData = new GameData(
+                    gameID, username, gameData.blackUsername(), gameData.gameName(), gameData.game());
+        } else {
+            if (gameData.blackUsername() != null) {
+                throw new DataAccessException.AlreadyTakenException("Black player already taken");
+            }
+            newGameData = new GameData(
+                    gameID, gameData.whiteUsername(), username, gameData.gameName(), gameData.game());
+        }
+        deleteThenAddGame(newGameData);
     }
 
-    @Override
-    public HashSet<GameData> getGames() {
-        return new HashSet<>();
+    private void deleteThenAddGame(GameData newGameData) {
+        var delStatement = "DELETE FROM game WHERE gameID=?";
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var delPreparedStatement = conn.prepareStatement(delStatement)) {
+                delPreparedStatement.setInt(1, newGameData.gameID());
+                delPreparedStatement.executeUpdate();
+            }
+            var addStatement = "INSERT INTO game (gameID, whiteUsername, blackUsername, gameName, game) VALUES (?,?,?,?,?)";
+            try (var addPreparedStatement = conn.prepareStatement(addStatement)) {
+                addPreparedStatement.setInt(1, newGameData.gameID());
+                addPreparedStatement.setString(2, newGameData.whiteUsername());
+                addPreparedStatement.setString(3, newGameData.blackUsername());
+                addPreparedStatement.setString(4, newGameData.gameName());
+
+                String gameJson = serializer.toJson(newGameData.game());
+                addPreparedStatement.setString(5, gameJson);
+
+                addPreparedStatement.executeUpdate();
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
