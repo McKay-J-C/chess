@@ -234,7 +234,45 @@ public class SqlDaoTests {
         Assertions.assertNull(gameDAO.getGame(9));
     }
 
+    @Test
+    @Order(19)
+    @DisplayName("Successful Create Game")
+    public void successfulCreateGame() throws DataAccessException, SQLException {
+        createBobAndAuth();
+        int gameID = gameDAO.addGame("Bobs game");
+        GameData gameData = gameDAO.getGame(gameID);
 
+        GameData testGameData = new GameData(1, null, null, "Bobs game", new ChessGame());
+        Assertions.assertEquals(testGameData, gameData);
+    }
+
+    @Test
+    @Order(20)
+    @DisplayName("Successful Get Games")
+    public void successfulGetGames() throws DataAccessException, SQLException {
+        createBobAndAuth();
+        createDaveAndAuth();
+        gameDAO.addGame("Bobs game");
+        gameDAO.addGame("Daves game");
+
+        GameData testBobGame = new GameData(1, null, null, "Bobs game", new ChessGame());
+        GameData testDaveGame = new GameData(2, null, null, "Daves game", new ChessGame());
+        HashSet<GameData> gameData = gameDAO.listGames();
+
+        Assertions.assertTrue(gameData.contains(testBobGame));
+        Assertions.assertTrue(gameData.contains(testDaveGame));
+        Assertions.assertEquals(2, gameData.size());
+    }
+
+    @Test
+    @Order(20)
+    @DisplayName("No Games Get Games")
+    public void noGamesGetGames() throws DataAccessException, SQLException {
+        createBobAndAuth();
+        createDaveAndAuth();
+        HashSet<GameData> gameData = gameDAO.listGames();
+        Assertions.assertNull(gameData);
+    }
 
     public AuthData createBobAndAuth() throws SQLException, DataAccessException {
         createBob();

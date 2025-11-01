@@ -7,7 +7,7 @@ import java.util.HashSet;
 
 public interface GameDAO {
 
-    default int addGame(String s) {
+    default int addGame(String gameName) throws DataAccessException {
         return 1;
     }
 
@@ -15,7 +15,7 @@ public interface GameDAO {
         return new GameData(1, "", "", "", new ChessGame());
     }
 
-    default HashSet<GameData> listGames() {
+    default HashSet<GameData> listGames() throws DataAccessException {
         return new HashSet<>();
     }
 

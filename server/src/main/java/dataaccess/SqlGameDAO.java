@@ -21,8 +21,26 @@ public class SqlGameDAO implements GameDAO {
     }
 
     @Override
-    public int addGame(String s) {
-        return 1;
+    public int addGame(String gameName) throws DataAccessException {
+        curID++;
+
+        String statement = "INSERT INTO game (gameID, whiteUsername, blackUsername, gameName, game) VALUES (?,?,?,?,?)";
+        try (var conn = DatabaseManager.getConnection()) {
+            var preparedStatement = conn.prepareStatement(statement);
+            preparedStatement.setInt(1, curID);
+            preparedStatement.setString(2, null);
+            preparedStatement.setString(3, null);
+            preparedStatement.setString(4, gameName);
+
+            ChessGame game = new ChessGame();
+            String gameJson = serializer.toJson(game);
+            preparedStatement.setString(5, gameJson);
+
+            preparedStatement.executeUpdate();
+            return curID;
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     @Override
@@ -50,8 +68,31 @@ public class SqlGameDAO implements GameDAO {
     }
 
     @Override
-    public HashSet<GameData> listGames() {
-        return new HashSet<>();
+    public HashSet<GameData> listGames() throws DataAccessException {
+        HashSet<GameData> games = new HashSet<>();
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT * FROM game";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        int foundGameID = rs.getInt("gameID");
+                        String foundWhiteUsername = rs.getString("whiteUsername");
+                        String foundBlackUsername = rs.getString("blackUsername");
+                        String foundGameName = rs.getString("gameName");
+
+                        String gameJson = rs.getString("game");
+                        ChessGame foundGame = serializer.fromJson(gameJson, ChessGame.class);
+                        games.add(new GameData(foundGameID, foundWhiteUsername, foundBlackUsername, foundGameName, foundGame));
+                    }
+                }
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new DataAccessException("Error in finding users");
+        }
+        if (games.isEmpty()) {
+            return null;
+        }
+        return games;
     }
 
     @Override
@@ -66,6 +107,7 @@ public class SqlGameDAO implements GameDAO {
 
     @Override
     public void clear() throws DataAccessException {
+        curID = 0;
         var statement = "DELETE FROM game";
         try (var conn = DatabaseManager.getConnection()) {
             try (var preparedStatement = conn.prepareStatement( statement)) {
