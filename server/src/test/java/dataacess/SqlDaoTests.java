@@ -177,6 +177,28 @@ public class SqlDaoTests {
         Assertions.assertEquals(bobAuth, authDAO.getAuth(bobAuth.authToken()));
     }
 
+    @Test
+    @Order(16)
+    @DisplayName("Successful Authorize")
+    public void successfulAuthorize() throws DataAccessException, SQLException {
+        AuthData bobAuth = createBobAndAuth();
+        AuthData daveAuth = createDaveAndAuth();
+
+        Assertions.assertEquals(bobAuth, authDAO.authorize(bobAuth.authToken()));
+        Assertions.assertEquals(daveAuth, authDAO.authorize(daveAuth.authToken()));
+    }
+
+    @Test
+    @Order(16)
+    @DisplayName("Unsuccessful Authorize")
+    public void unsuccessfulAuthorize() throws DataAccessException, SQLException {
+        AuthData bobAuth = createBobAndAuth();
+        AuthData daveAuth = createDaveAndAuth();
+
+        Assertions.assertThrows(DataAccessException.UnauthorizedException.class, () -> authDAO.authorize("hi"));
+        Assertions.assertThrows(DataAccessException.UnauthorizedException.class, () -> authDAO.authorize("your mom"));
+    }
+
     public AuthData createBobAndAuth() throws SQLException, DataAccessException {
         createBob();
         return authDAO.createAuth("Bob");
