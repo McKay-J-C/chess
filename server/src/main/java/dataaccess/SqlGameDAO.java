@@ -12,7 +12,7 @@ public class SqlGameDAO implements GameDAO {
     private final Gson serializer = new Gson();
     private int curID;
 
-    public SqlGameDAO() throws DataAccessException {
+    public SqlGameDAO() {
         String[] createStatements = {
                 """
             CREATE TABLE IF NOT EXISTS game (

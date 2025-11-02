@@ -12,7 +12,7 @@ import static model.AuthData.generateToken;
 
 public class SqlAuthDAO implements AuthDAO {
 
-    public SqlAuthDAO() throws DataAccessException {
+    public SqlAuthDAO() {
         String[] createStatements = {
                 """
             CREATE TABLE IF NOT EXISTS auth (

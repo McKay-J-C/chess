@@ -11,7 +11,7 @@ import java.sql.*;
 
 public class SqlUserDAO implements UserDAO {
 
-    public SqlUserDAO() throws DataAccessException {
+    public SqlUserDAO() {
         String[] createStatements = {
                 """
             CREATE TABLE IF NOT EXISTS user (

@@ -75,16 +75,20 @@ public class DatabaseManager {
         connectionUrl = String.format("jdbc:mysql://%s:%d", host, port);
     }
 
-    static void configureDatabase(String[] createStatements) throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (Connection conn = DatabaseManager.getConnection()) {
-            for (String statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
+    static void configureDatabase(String[] createStatements) {
+        try {
+            createDatabase();
+            try (Connection conn = DatabaseManager.getConnection()) {
+                for (String statement : createStatements) {
+                    try (var preparedStatement = conn.prepareStatement(statement)) {
+                        preparedStatement.executeUpdate();
+                    }
                 }
             }
-        } catch (SQLException ex) {
-            throw new DataAccessException("Error: error in configuring database");
+        } catch (SQLException ex ) {
+            throw new RuntimeException();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 }

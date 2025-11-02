@@ -23,7 +23,7 @@ public class Server {
     private final GameService gameService;
     private final UserService userService;
 
-    public Server() throws DataAccessException {
+    public Server() {
         this(new ClearService(new SqlUserDAO(), new SqlAuthDAO(), new SqlGameDAO()),
                 new GameService(new SqlGameDAO(), new SqlAuthDAO()),
                 new UserService(new SqlUserDAO(), new SqlAuthDAO() {
@@ -61,7 +61,7 @@ public class Server {
         context.json(new Gson().toJson(errorResponse));
     }
 
-    private void registerHandler(@NotNull Context context) throws DataAccessException, BadRequestException, SQLException {
+    private void registerHandler(@NotNull Context context) throws DataAccessException, BadRequestException {
         RegisterRequest registerRequest = new Gson().fromJson(context.body(), RegisterRequest.class);
         checkArg(registerRequest.username());
         checkArg(registerRequest.password());
