@@ -13,8 +13,6 @@ import service.ClearService;
 import service.GameService;
 import service.UserService;
 
-import java.sql.SQLException;
-
 
 public class Server {
 
