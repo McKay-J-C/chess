@@ -88,7 +88,7 @@ public class SqlDaoTests {
     @Order(6)
     @DisplayName("Unsuccessful Get Users")
     public void noUsersGetUsers() throws DataAccessException {
-        Assertions.assertNull(userDAO.getUsers());
+        Assertions.assertTrue(userDAO.getUsers().isEmpty());
     }
 
     @Test
@@ -98,7 +98,7 @@ public class SqlDaoTests {
         createBob();
         createDave();
         userDAO.clear();
-        Assertions.assertNull(userDAO.getUsers());
+        Assertions.assertTrue(userDAO.getUsers().isEmpty());
         Assertions.assertNull(userDAO.getUser("Bob"));
         Assertions.assertNull(userDAO.getUser("Dave"));
     }
@@ -157,7 +157,7 @@ public class SqlDaoTests {
     @Order(13)
     @DisplayName("Unsuccessful Get Auths")
     public void noAuthGetAuths() throws DataAccessException {
-        Assertions.assertNull(authDAO.getAuths());
+        Assertions.assertTrue(authDAO.getAuths().isEmpty());
     }
 
     @Test
@@ -208,7 +208,7 @@ public class SqlDaoTests {
         createBobAndAuth();
         createDaveAndAuth();
         authDAO.clear();
-        Assertions.assertNull(authDAO.getAuths());
+        Assertions.assertTrue(authDAO.getAuths().isEmpty());
         Assertions.assertNull(authDAO.getAuth("Bob"));
         Assertions.assertNull(authDAO.getAuth("Dave"));
     }
@@ -270,7 +270,7 @@ public class SqlDaoTests {
         createBobAndAuth();
         createDaveAndAuth();
         HashSet<GameData> gameData = gameDAO.getGames();
-        Assertions.assertNull(gameData);
+        Assertions.assertTrue(gameData.isEmpty());
     }
 
     @Test
@@ -343,7 +343,7 @@ public class SqlDaoTests {
         gameDAO.updateGame(2, ChessGame.TeamColor.BLACK, "Bob");
         gameDAO.clear();
 
-        Assertions.assertNull(gameDAO.getGames());
+        Assertions.assertTrue(gameDAO.getGames().isEmpty());
         Assertions.assertNull(gameDAO.getGame(1));
         Assertions.assertNull(gameDAO.getGame(2));
     }
