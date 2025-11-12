@@ -6,8 +6,8 @@ import io.javalin.*;
 import io.javalin.http.Context;
 import org.jetbrains.annotations.NotNull;
 
-import request.*;
 import response.*;
+import request.*;
 import service.BadRequestException;
 import service.ClearService;
 import service.GameService;
