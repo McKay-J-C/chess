@@ -1,5 +1,7 @@
 package client;
 
+import chess.ChessGame;
+import model.GameData;
 import org.junit.jupiter.api.*;
 import request.RegisterRequest;
 import response.RegisterResponse;
@@ -8,6 +10,8 @@ import server.Server;
 import server.ServerFacade;
 import response.*;
 import request.*;
+
+import java.util.HashSet;
 
 //import static dataaccess.MemDatabase.authData;
 
@@ -97,8 +101,7 @@ public class ServerFacadeTests {
     @Test
     @Order(7)
     public void successfulCreateGame() {
-        RegisterResponse registerResponse = registerBob();
-        CreateGameResponse createGameResponse = createBobsGame(registerResponse.authToken());
+        CreateGameResponse createGameResponse = registerCreateBobsGame();
         Assertions.assertEquals(1, createGameResponse.gameID());
     }
 
@@ -109,16 +112,71 @@ public class ServerFacadeTests {
         Assertions.assertThrows(ResponseException.class, () -> createBobsGame("hi"));
     }
 
-//    @Test
-//    public void successfulLogin() {
-//        registerBob();
-//    }
+    @Test
+    @Order(9)
+    public void successfulListGames() {
+        String auth = registerBob().authToken();
+        createBobsGame(auth);
+        registerCreateDavesGame();
+        ListGamesResponse listGamesResponse = facade.listGames(new ListGamesRequest(auth), auth);
+
+        HashSet<GameData> testGames = new HashSet<>();
+        testGames.add(new GameData(1, null, null, "Bobs Game", new ChessGame()));
+        testGames.add(new GameData(2, null, null, "Daves Game", new ChessGame()));
+
+        Assertions.assertEquals(testGames, listGamesResponse.games());
+    }
+
+    @Test
+    @Order(10)
+    public void unsuccessfulListGames() {
+        registerCreateBobsGame();
+        registerCreateDavesGame();
+
+        Assertions.assertThrows(ResponseException.class, () -> facade.listGames(new ListGamesRequest("hi"), "hi"));
+    }
+
+    @Test
+    @Order(11)
+    public void successfulJoinGame() {
+        JoinGameResponse joinGameResponse = registerJoinBobsGame();
+
+    }
+
     private RegisterResponse registerBob() {
         return facade.register(new RegisterRequest("Bob", "goCougs27", "gamil@gmail.com"));
     }
 
     private CreateGameResponse createBobsGame(String auth) {
         return facade.createGame(new CreateGameRequest("Bobs Game"), auth);
+    }
+
+    private RegisterResponse registerDave() {
+        return facade.register(new RegisterRequest("Dave", "hello", "hi@hi.com"));
+    }
+
+    private CreateGameResponse createDavesGame(String auth) {
+        return facade.createGame(new CreateGameRequest("Daves Game"), auth);
+    }
+
+    private JoinGameResponse joinBobsGames(String auth) {
+        return facade.joinGame(new JoinGameRequest("WHITE", 1), auth);
+    }
+
+    private CreateGameResponse registerCreateBobsGame() {
+        RegisterResponse registerResponse = registerBob();
+        return createBobsGame(registerResponse.authToken());
+    }
+
+    private CreateGameResponse registerCreateDavesGame() {
+        RegisterResponse registerResponse = registerDave();
+        return createDavesGame(registerResponse.authToken());
+    }
+
+    private JoinGameResponse registerJoinBobsGame() {
+        RegisterResponse registerResponse = registerBob();
+        createBobsGame(registerResponse.authToken());
+        return joinBobsGames(registerResponse.authToken());
     }
 //    private AuthData registerBob() {
 //        return facade.register(new RegisterRequest("Bob", "goCougs27", "gamil@gmail.com"));
