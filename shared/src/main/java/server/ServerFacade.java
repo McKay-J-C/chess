@@ -8,6 +8,7 @@ import request.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.*;
 import java.net.http.HttpResponse;
@@ -23,50 +24,53 @@ public class ServerFacade {
     }
 
     public void clear() {
-        var request = createHttpRequest("DELETE", "/db", null);
+        var request = createHttpRequest("DELETE", "/db", null, null);
         sendRequest(request);
     }
 
-    public AuthData register(RegisterRequest registerRequest) {
-        var request = createHttpRequest("POST", "/user", registerRequest);
+    public RegisterResponse register(RegisterRequest registerRequest) {
+        var request = createHttpRequest("POST", "/user", registerRequest, null);
         var response = sendRequest(request);
-        return handleResponse(response, AuthData.class);
+        return handleResponse(response, RegisterResponse.class);
     }
 
     public LoginResponse login(LoginRequest loginRequest) {
-        var request = createHttpRequest("POST", "/session", loginRequest);
+        var request = createHttpRequest("POST", "/session", loginRequest, null);
         var response = sendRequest(request);
         return handleResponse(response, LoginResponse.class);
     }
 
     public LogoutResponse logout(LogoutRequest logoutRequest) {
-        var request = createHttpRequest("DELETE", "/session", logoutRequest);
+        var request = createHttpRequest("DELETE", "/session", logoutRequest, logoutRequest.authToken());
         var response = sendRequest(request);
         return handleResponse(response, LogoutResponse.class);
     }
 
-    public CreateGameResponse createGame(CreateGameRequest createGameRequest) {
-        var request = createHttpRequest("POST", "/game", createGameRequest);
+    public CreateGameResponse createGame(CreateGameRequest createGameRequest, String auth) {
+        var request = createHttpRequest("POST", "/game", createGameRequest, auth);
         var response = sendRequest(request);
         return handleResponse(response, CreateGameResponse.class);
     }
 
-    public ListGamesResponse listGames(ListGamesRequest listGamesRequest) {
-        var request = createHttpRequest("GET", "/game", listGamesRequest);
+    public ListGamesResponse listGames(ListGamesRequest listGamesRequest, String auth) {
+        var request = createHttpRequest("GET", "/game", listGamesRequest, auth);
         var response = sendRequest(request);
         return handleResponse(response, ListGamesResponse.class);
     }
 
-    public JoinGameResponse joinGame(JoinGameRequest joinGameRequest) {
-        var request = createHttpRequest("PUT", "/game", joinGameRequest);
+    public JoinGameResponse joinGame(JoinGameRequest joinGameRequest, String auth) {
+        var request = createHttpRequest("PUT", "/game", joinGameRequest, auth);
         var response = sendRequest(request);
         return handleResponse(response, JoinGameResponse.class);
     }
 
-    private HttpRequest createHttpRequest(String method, String path, Object body) {
+    private HttpRequest createHttpRequest(String method, String path, Object body, String header) {
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + path))
                 .method(method, createBody(body));
+        if (header != null) {
+            request.setHeader("authorization", header);
+        }
         if (body != null) {
             request.setHeader("Content-Type", "application/json");
         }
@@ -105,6 +109,11 @@ public class ServerFacade {
 
     private boolean successful(int status) {
         return status / 100 == 2;
+    }
+
+    private boolean hasAuth(HttpRequest request) {
+        HttpHeaders headers = request.headers();
+        return headers.firstValue("authorization").isPresent();
     }
 
 }
