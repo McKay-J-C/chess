@@ -92,7 +92,21 @@ public class ServerFacadeTests {
         RegisterResponse registerResponse = registerBob();
         Assertions.assertThrows(ResponseException.class,
                 () -> facade.logout(new LogoutRequest("hi")));
+    }
 
+    @Test
+    @Order(7)
+    public void successfulCreateGame() {
+        RegisterResponse registerResponse = registerBob();
+        CreateGameResponse createGameResponse = createBobsGame(registerResponse.authToken());
+        Assertions.assertEquals(1, createGameResponse.gameID());
+    }
+
+    @Test
+    @Order(8)
+    public void unsuccessfulCreateGame() {
+        registerBob();
+        Assertions.assertThrows(ResponseException.class, () -> createBobsGame("hi"));
     }
 
 //    @Test
@@ -101,6 +115,10 @@ public class ServerFacadeTests {
 //    }
     private RegisterResponse registerBob() {
         return facade.register(new RegisterRequest("Bob", "goCougs27", "gamil@gmail.com"));
+    }
+
+    private CreateGameResponse createBobsGame(String auth) {
+        return facade.createGame(new CreateGameRequest("Bobs Game"), auth);
     }
 //    private AuthData registerBob() {
 //        return facade.register(new RegisterRequest("Bob", "goCougs27", "gamil@gmail.com"));
