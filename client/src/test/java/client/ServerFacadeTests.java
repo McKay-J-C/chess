@@ -13,9 +13,8 @@ import request.*;
 
 import java.util.HashSet;
 
-//import static dataaccess.MemDatabase.authData;
 
-
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ServerFacadeTests {
 
     private static Server server;
@@ -34,22 +33,11 @@ public class ServerFacadeTests {
         server.stop();
     }
 
-    @BeforeAll
-    static void clearDatabase() {
+    @BeforeEach
+    void clearDatabase() {
         facade.clear();
     }
 
-//    @AfterAll
-//    static void clearADatabase() {
-//        facade.clear();
-//    }
-
-//    @Test
-//    public void successfulRegister() {
-//        AuthData authData = registerBob();
-//        Assertions.assertEquals("Bob", authData.username());
-//        Assertions.assertTrue(authData.authToken().length() > 10);
-//    }
     @Test
     @Order(1)
     public void successfulRegister() {
@@ -164,6 +152,31 @@ public class ServerFacadeTests {
                 () -> facade.joinGame(new JoinGameRequest("WHITE", 1), bobAuth));
         Assertions.assertThrows(ResponseException.class,
                 () -> facade.joinGame(new JoinGameRequest("BLACK", 2), daveAuth));
+    }
+
+    @Test
+    @Order(13)
+    public void successfulClear() {
+        String auth = registerBob().authToken();
+        createJoinBobsGame(auth);
+        registerJoinDavesGame();
+
+        HashSet<GameData> testGames = new HashSet<>();
+        testGames.add(new GameData(1, "Bob", null, "Bobs Game", new ChessGame()));
+        testGames.add(new GameData(2, null, "Dave", "Daves Game", new ChessGame()));
+        Assertions.assertEquals(testGames, facade.listGames(new ListGamesRequest(auth), auth).games());
+
+        facade.clear();
+        Assertions.assertThrows(ResponseException.class,
+                () -> facade.listGames(new ListGamesRequest(auth), auth));
+
+        String newAuth = registerBob().authToken();
+        Assertions.assertEquals(new HashSet<>(), facade.listGames(new ListGamesRequest(newAuth), newAuth).games());
+        createJoinBobsGame(newAuth);
+
+        HashSet<GameData> testGames2 = new HashSet<>();
+        testGames2.add(new GameData(1, null, null, "Bobs Game", new ChessGame()));
+        Assertions.assertEquals(facade.listGames(new ListGamesRequest(auth), auth).games(), testGames2);
     }
 
     private RegisterResponse registerBob() {

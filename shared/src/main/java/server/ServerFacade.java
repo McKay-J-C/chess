@@ -1,7 +1,6 @@
 package server;
 
 import com.google.gson.Gson;
-import model.AuthData;
 import response.*;
 import request.*;
 
