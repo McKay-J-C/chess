@@ -55,7 +55,7 @@ public class PostloginClient {
             case "3" -> createGame(scanner, auth);
             case "4" -> listGames(auth);
             case "5" -> playGame(scanner, auth);
-//            case "6" -> observeGame(scanner);
+            case "6" -> observeGame(scanner, auth);
             default -> System.out.print("\nInvalid input - Please Enter a number 1-6\n\n");
         }
     }
@@ -95,18 +95,7 @@ public class PostloginClient {
     }
 
     private void playGame(Scanner scanner, String auth) {
-        listGames(auth);
-        System.out.println("Enter the number for the game you would like to join: ");
-        String gameNum = scanner.nextLine();
-        if (gameNum.isEmpty()) {
-            playGame(scanner, auth);
-        }
-        if (!isNumeric(gameNum)) {
-            System.out.println("Please enter a number 1-" + gameMap.size());
-            playGame(scanner, auth);
-        }
-        GameData game = gameMap.get(Integer.parseInt(gameNum));
-        int gameID = game.gameID();
+        int gameID = joinGame(scanner, auth);
 
         System.out.println("What color would you like to play as?");
         System.out.println("1: White\n2: Black");
@@ -134,6 +123,11 @@ public class PostloginClient {
         }
     }
 
+    private void observeGame(Scanner scanner, String auth) {
+        int gameID = joinGame(scanner, auth);
+        enterGameplay(auth, gameID);
+    }
+
     static boolean isNumeric(String s) {
         try {
             Integer.parseInt(s);
@@ -148,5 +142,18 @@ public class PostloginClient {
         gameplayClient.run(authToken, gameID);
     }
 
-
+    private int joinGame(Scanner scanner, String auth) {
+        listGames(auth);
+        System.out.println("Enter the number for the game you would like to join: ");
+        String gameNum = scanner.nextLine();
+        if (gameNum.isEmpty()) {
+            playGame(scanner, auth);
+        }
+        if (!isNumeric(gameNum)) {
+            System.out.println("Please enter a number 1-" + gameMap.size());
+            playGame(scanner, auth);
+        }
+        GameData game = gameMap.get(Integer.parseInt(gameNum));
+        return game.gameID();
+    }
 }
