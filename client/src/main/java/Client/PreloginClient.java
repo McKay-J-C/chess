@@ -1,5 +1,9 @@
+package Client;
+
 import request.LoginRequest;
 import request.RegisterRequest;
+import response.LoginResponse;
+import response.RegisterResponse;
 import server.ResponseException;
 import server.ServerFacade;
 
@@ -53,12 +57,12 @@ public class PreloginClient {
         String password = getPassword(scanner);
 
         try {
-            server.login(new LoginRequest(username, password));
+            LoginResponse loginResponse = server.login(new LoginRequest(username, password));
+            enterLogin(loginResponse.authToken());
         } catch (ResponseException ex) {
-            handleError(ex);
+            handleError(ex, "Username");
             login(scanner);
         }
-        enterLogin();
     }
     
     private void quit() {
@@ -73,11 +77,11 @@ public class PreloginClient {
         String email = getEmail(scanner);
 
         try {
-            server.register(new RegisterRequest(username, password, email));
+            RegisterResponse registerResponse = server.register(new RegisterRequest(username, password, email));
+            enterLogin(registerResponse.authToken());
         } catch (Exception ex) {
-            handleError(ex);
+            handleError(ex, "Username");
         }
-        enterLogin();
     }
 
     private String getUsername(Scanner scanner) {
@@ -111,17 +115,17 @@ public class PreloginClient {
         return email;
     }
 
-    private void enterLogin() {
+    private void enterLogin(String authToken) {
         PostloginClient postloginClient = new PostloginClient(server);
-        postloginClient.run();
+        postloginClient.run(authToken);
     }
 
-    static void handleError(Exception ex) {
+    public static void handleError(Exception ex, String takenVariable) {
         String message = ex.getMessage();
         switch (message) {
             case "400" -> System.out.println("\nInvalid input\n");
             case "401" -> System.out.println("\nIncorrect username or password\n");
-            case "403" -> System.out.println("\nSorry! Already taken\n");
+            case "403" -> System.out.println("\nSorry! " + takenVariable + "already taken\n");
             default -> System.out.println("\nUnknown error\n");
         }
     }

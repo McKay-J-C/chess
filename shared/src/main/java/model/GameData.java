@@ -27,4 +27,10 @@ public record GameData(
     public int hashCode() {
         return Objects.hash(gameID, whiteUsername, blackUsername, gameName, game);
     }
+
+    @Override
+    public String toString() {
+        return gameName + "\nWhite Player: " + whiteUsername
+                + "\nBlack Player: " + blackUsername;
+    }
 }
