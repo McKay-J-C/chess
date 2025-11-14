@@ -2,24 +2,23 @@ package Client;
 
 import model.GameData;
 import request.CreateGameRequest;
+import request.JoinGameRequest;
 import request.ListGamesRequest;
 import request.LogoutRequest;
-import response.CreateGameResponse;
-import response.ListGamesResponse;
 import server.ServerFacade;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
 
-import static ui.EscapeSequences.BLACK_KING;
-import static ui.EscapeSequences.WHITE_KING;
 import static Client.PreloginClient.handleError;
 
 public class PostloginClient {
 
+    private HashMap<Integer, GameData> gameMap = new HashMap<>();
     private final ServerFacade server;
 
-    private String help =
+    private final String help =
             """
             Enter a number for what you would like to do!
             
@@ -55,7 +54,7 @@ public class PostloginClient {
             case "2" -> logout(auth);
             case "3" -> createGame(scanner, auth);
             case "4" -> listGames(auth);
-//            case "5" -> playGame(scanner, auth);
+            case "5" -> playGame(scanner, auth);
 //            case "6" -> observeGame(scanner);
             default -> System.out.print("\nInvalid input - Please Enter a number 1-6\n\n");
         }
@@ -84,13 +83,70 @@ public class PostloginClient {
         try {
             HashSet<GameData> games = server.listGames(new ListGamesRequest(auth), auth).games();
             int gameNum = 1;
+            gameMap.clear();
             for (GameData game : games) {
                 System.out.println(gameNum + ": " + game.toString() + "\n");
+                gameMap.put(gameNum, game);
                 gameNum++;
             }
         } catch (Exception ex) {
             handleError(ex, null);
         }
     }
+
+    private void playGame(Scanner scanner, String auth) {
+        listGames(auth);
+        System.out.println("Enter the number for the game you would like to join: ");
+        String gameNum = scanner.nextLine();
+        if (gameNum.isEmpty()) {
+            playGame(scanner, auth);
+        }
+        if (!isNumeric(gameNum)) {
+            System.out.println("Please enter a number 1-" + gameMap.size());
+            playGame(scanner, auth);
+        }
+        GameData game = gameMap.get(Integer.parseInt(gameNum));
+        int gameID = game.gameID();
+
+        System.out.println("What color would you like to play as?");
+        System.out.println("1: White\n2: Black");
+        String colorNum = scanner.nextLine();
+        String color;
+
+        while (true) {
+            if (colorNum.equals("1")) {
+                color = "WHITE";
+                break;
+            } else if (colorNum.equals("2")) {
+                color = "BLACK";
+                break;
+            } else {
+                System.out.println("Please enter 1 (White) or 2 (Black): ");
+                colorNum = scanner.nextLine();
+            }
+        }
+
+        try {
+            server.joinGame(new JoinGameRequest(color, gameID), auth);
+            enterGameplay(auth, gameID);
+        } catch (Exception ex) {
+            handleError(ex, color + " player");
+        }
+    }
+
+    static boolean isNumeric(String s) {
+        try {
+            Integer.parseInt(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private void enterGameplay(String authToken, int gameID) {
+        GameplayClient gameplayClient = new GameplayClient(server);
+        gameplayClient.run(authToken, gameID);
+    }
+
 
 }
