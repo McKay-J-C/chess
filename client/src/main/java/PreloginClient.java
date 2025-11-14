@@ -36,15 +36,15 @@ public class PreloginClient {
             line = scanner.nextLine();
             eval(line, scanner);
         }
-        quit();
     }
     
     private void eval(String line, Scanner scanner) {
         switch (line) {
             case "1" -> System.out.print(help);
+            case "2" -> quit();
             case "3" -> login(scanner);
             case "4" -> register(scanner);
-            default -> System.out.print("Please Enter a number 1-4\n" + help);
+            default -> System.out.print("\nInvalid input - Please Enter a number 1-4\n\n");
         }
     }
     
@@ -52,14 +52,10 @@ public class PreloginClient {
         String username = getUsername(scanner);
         String password = getPassword(scanner);
 
-//        server.login(new LoginRequest(username, password));
         try {
             server.login(new LoginRequest(username, password));
         } catch (ResponseException ex) {
-
-            if (ex.getMessage().equals("Error: incorrect password")) {
-                System.out.println("Incorrect password");
-            }
+            handleError(ex);
             login(scanner);
         }
         enterLogin();
@@ -76,13 +72,20 @@ public class PreloginClient {
         String password = getPassword(scanner);
         String email = getEmail(scanner);
 
-        server.register(new RegisterRequest(username, password, email));
+        try {
+            server.register(new RegisterRequest(username, password, email));
+        } catch (Exception ex) {
+            handleError(ex);
+        }
         enterLogin();
     }
 
     private String getUsername(Scanner scanner) {
-        System.out.println("Please enter a username: ");
+        System.out.println("Please enter a username (or enter q to go back) : ");
         String username = scanner.nextLine();
+        if (username.equals("q")) {
+            run();
+        }
         if (username.isEmpty()) {
             return getUsername(scanner);
         }
@@ -113,4 +116,13 @@ public class PreloginClient {
         postloginClient.run();
     }
 
+    static void handleError(Exception ex) {
+        String message = ex.getMessage();
+        switch (message) {
+            case "400" -> System.out.println("\nInvalid input\n");
+            case "401" -> System.out.println("\nIncorrect username or password\n");
+            case "403" -> System.out.println("\nSorry! Already taken\n");
+            default -> System.out.println("\nUnknown error\n");
+        }
+    }
 }
