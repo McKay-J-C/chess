@@ -22,9 +22,9 @@ public class GameplayClient {
         this.server = server;
     }
 
-    public void run(String auth, GameData gameData) {
+    public void run(String auth, GameData gameData, ChessGame.TeamColor color) {
         System.out.println("Running Gameplay");
-        printGame(gameData.game().getBoard());
+        printGame(gameData.game().getBoard(), color);
 
         System.out.println("Enter \"q\" to exit");
         Scanner scanner = new Scanner(System.in);
@@ -32,30 +32,79 @@ public class GameplayClient {
         if (input.equals("q") || input.equals("Q")) {
             exitGame();
         } else {
-            printGame(gameData.game().getBoard());
+            printGame(gameData.game().getBoard(), color);
+        }
+    }
+//
+//    private void printGame(ChessBoard board) {
+//        System.out.println();
+//        for (int i=1; i < 9; i++) {
+//            for (int j=8; j > 0; j--) {
+//                switchBackColor();
+//                ChessPosition pos = new ChessPosition(i, j);
+//                ChessPiece piece = board.getPiece(pos);
+//                if (piece == null) {
+//                    System.out.print(EMPTY);
+//                } else {
+//                    printPiece(piece);
+//                }
+////                System.out.print(Integer.toString(i) + Integer.toString(j));
+//                if (j == 1) {
+//                    switchBackColor();
+//                    System.out.print(SET_BG_COLOR_BLACK);
+//                    System.out.print("\n");
+//                }
+//            }
+//        }
+//        System.out.println();
+//    }
+
+    private void printGame(ChessBoard board, ChessGame.TeamColor color) {
+        System.out.println();
+        if (color.equals(ChessGame.TeamColor.WHITE)) {
+            printGameWhite(board);
+        }
+        if (color.equals(ChessGame.TeamColor.BLACK)) {
+            printGameBlack(board);
+        }
+        System.out.println();
+    }
+
+    private void printGameWhite(ChessBoard board) {
+        for (int i=8; i > 0; i--) {
+            for (int j=1; j < 9; j++) {
+                printNextPiece(i, j, board);
+                checkNewRow(j, 8);
+            }
         }
     }
 
-    private void printGame(ChessBoard board) {
-        System.out.println();
+    private void printGameBlack(ChessBoard board) {
         for (int i=1; i < 9; i++) {
-            for (int j=1; j < 9; j++) {
-                switchBackColor();
-                ChessPosition pos = new ChessPosition(i, j);
-                ChessPiece piece = board.getPiece(pos);
-                if (piece == null) {
-                    System.out.print(EMPTY);
-                } else {
-                    printPiece(piece);
-                }
-                if (j == 8) {
-                    switchBackColor();
-                    System.out.print(SET_BG_COLOR_BLACK);
-                    System.out.print("\n");
-                }
+            for (int j=9; j > 0; j--) {
+                printNextPiece(i, j, board);
+                checkNewRow(j, 1);
             }
         }
-        System.out.println();
+    }
+
+    private void checkNewRow(int j, int switchNum) {
+        if (j == switchNum) {
+            switchBackColor();
+            System.out.print(SET_BG_COLOR_BLACK);
+            System.out.print("\n");
+        }
+    }
+
+    private void printNextPiece(int i, int j, ChessBoard board) {
+        switchBackColor();
+        ChessPosition pos = new ChessPosition(i, j);
+        ChessPiece piece = board.getPiece(pos);
+        if (piece == null) {
+            System.out.print(EMPTY);
+        } else {
+            printPiece(piece);
+        }
     }
 
     private void printPiece(ChessPiece piece) {
@@ -67,6 +116,7 @@ public class GameplayClient {
     }
 
     private void printWhitePiece(ChessPiece.PieceType type) {
+        System.out.print(SET_TEXT_COLOR_WHITE);
         if (type == ChessPiece.PieceType.ROOK) {
             System.out.print(WHITE_ROOK);
         } else if (type == ChessPiece.PieceType.KNIGHT){
@@ -83,6 +133,7 @@ public class GameplayClient {
     }
 
     private void printBlackPiece(ChessPiece.PieceType type) {
+        System.out.print(SET_TEXT_COLOR_BLACK);
         if (type == ChessPiece.PieceType.ROOK) {
             System.out.print(BLACK_ROOK);
         } else if (type == ChessPiece.PieceType.KNIGHT){
@@ -100,10 +151,10 @@ public class GameplayClient {
 
     private void switchBackColor() {
         if (curBackColor.equals("White")) {
-            System.out.print(SET_BG_COLOR_DARK_GREY);
+            System.out.print(SET_BG_COLOR_MEDIUM_GREY);
             curBackColor = "Black";
         } else if (curBackColor.equals("Black")) {
-            System.out.print(SET_BG_COLOR_LIGHT_GREY);
+            System.out.print(SET_BG_COLOR_EXTRA_LIGHT_GREY);
             curBackColor = "White";
         } else {
             throw new RuntimeException("Bad Background Color");

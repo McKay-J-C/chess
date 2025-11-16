@@ -14,7 +14,7 @@ import static ui.EscapeSequences.*;
 public class PreloginClient {
 
     private final ServerFacade server;
-    private String help =
+    private final String help =
             """
             Enter a number for what you would like to do!
             
@@ -122,6 +122,9 @@ public class PreloginClient {
 
     public static void handleError(Exception ex, String takenVariable) {
         String message = ex.getMessage();
+        if (message == null) {
+            System.out.println("MESSAGE NULL");
+        }
         switch (message) {
             case "400" -> System.out.println("\nInvalid input\n");
             case "401" -> System.out.println("\nIncorrect username or password\n");

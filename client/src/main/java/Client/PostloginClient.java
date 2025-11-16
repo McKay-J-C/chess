@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Scanner;
 
 import static Client.PreloginClient.handleError;
+import static chess.ChessGame.TeamColor.*;
 
 public class PostloginClient {
 
@@ -115,10 +116,16 @@ public class PostloginClient {
                 colorNum = scanner.nextLine();
             }
         }
-
         try {
             server.joinGame(new JoinGameRequest(color, gameData.gameID()), auth);
-            enterGameplay(auth, gameData);
+            if (color.equals("WHITE")) {
+                enterGameplay(auth, gameData, WHITE);
+            } else if (color.equals("BLACK")) {
+                enterGameplay(auth, gameData, BLACK);
+            } else {
+                throw new RuntimeException("Invalid color");
+            }
+
         } catch (Exception ex) {
             handleError(ex, color + " player ");
         }
@@ -126,7 +133,7 @@ public class PostloginClient {
 
     private void observeGame(Scanner scanner, String auth) {
         GameData gameData = joinGame(scanner, auth);
-        enterGameplay(auth, gameData);
+        enterGameplay(auth, gameData, WHITE);
     }
 
     static boolean isNumeric(String s) {
@@ -138,9 +145,9 @@ public class PostloginClient {
         }
     }
 
-    private void enterGameplay(String authToken, GameData gameData) {
+    private void enterGameplay(String authToken, GameData gameData, ChessGame.TeamColor color) {
         GameplayClient gameplayClient = new GameplayClient(server);
-        gameplayClient.run(authToken, gameData);
+        gameplayClient.run(authToken, gameData, color);
     }
 
     private GameData joinGame(Scanner scanner, String auth) {
