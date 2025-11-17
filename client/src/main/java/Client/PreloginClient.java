@@ -129,7 +129,7 @@ public class PreloginClient {
             case "400" -> System.out.println("\nInvalid input\n");
             case "401" -> System.out.println("\nIncorrect username or password\n");
             case "403" -> System.out.println("\nSorry! " + takenVariable + "already taken\n");
-            default -> System.out.println("\nUnknown error\n");
+            default -> System.out.println("\nUnknown error\n" + message);
         }
     }
 }

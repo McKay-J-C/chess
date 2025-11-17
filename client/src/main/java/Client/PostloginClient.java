@@ -55,7 +55,7 @@ public class PostloginClient {
             case "1" -> System.out.print(help);
             case "2" -> logout(auth);
             case "3" -> createGame(scanner, auth);
-            case "4" -> listGames(auth);
+            case "4" -> listGames(scanner, auth);
             case "5" -> playGame(scanner, auth);
             case "6" -> observeGame(scanner, auth);
             default -> System.out.print("\nInvalid input - Please Enter a number 1-6\n\n");
@@ -80,7 +80,7 @@ public class PostloginClient {
         }
     }
 
-    private void listGames(String auth) {
+    private void listGames(Scanner scanner, String auth) {
         System.out.println("Current Games: \n");
         try {
             HashSet<GameData> games = server.listGames(new ListGamesRequest(auth), auth).games();
@@ -94,6 +94,8 @@ public class PostloginClient {
         } catch (Exception ex) {
             handleError(ex, null);
         }
+        System.out.println("\nPress enter to go back");
+        String input = scanner.nextLine();
     }
 
     private void playGame(Scanner scanner, String auth) {
@@ -151,7 +153,7 @@ public class PostloginClient {
     }
 
     private GameData joinGame(Scanner scanner, String auth) {
-        listGames(auth);
+        listGames(scanner, auth);
         System.out.println("Enter the number for the game you would like to join: ");
         String gameNum = scanner.nextLine();
         if (gameNum.isEmpty()) {

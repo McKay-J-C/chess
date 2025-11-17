@@ -63,10 +63,13 @@ public class GameplayClient {
         System.out.println();
         if (color.equals(ChessGame.TeamColor.WHITE)) {
             printGameWhite(board);
-        }
-        if (color.equals(ChessGame.TeamColor.BLACK)) {
+        } else if (color.equals(ChessGame.TeamColor.BLACK)) {
             printGameBlack(board);
+        } else {
+            throw new RuntimeException("Invalid color");
         }
+        System.out.print(RESET_TEXT_COLOR);
+        System.out.print(RESET_BG_COLOR);
         System.out.println();
     }
 
@@ -81,7 +84,7 @@ public class GameplayClient {
 
     private void printGameBlack(ChessBoard board) {
         for (int i=1; i < 9; i++) {
-            for (int j=9; j > 0; j--) {
+            for (int j=8; j > 0; j--) {
                 printNextPiece(i, j, board);
                 checkNewRow(j, 1);
             }
