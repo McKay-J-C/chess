@@ -247,6 +247,7 @@ public class ServiceTests {
         assert(gameService.getGameDAO().getGames().isEmpty());
         assert(userService.getUserDAO().getUsers().isEmpty());
         assert(userService.getAuthDAO().getAuths().isEmpty());
+        assert(clearService.getGameCurID() == 0);
     }
 
     JoinGameResponse registerMakeAndJoinGame() throws DataAccessException, SQLException {

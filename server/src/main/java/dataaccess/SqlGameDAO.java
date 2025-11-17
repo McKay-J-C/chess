@@ -10,13 +10,12 @@ import java.util.HashSet;
 public class SqlGameDAO implements GameDAO {
 
     private final Gson serializer = new Gson();
-    private int curID;
 
     public SqlGameDAO() {
         String[] createStatements = {
                 """
             CREATE TABLE IF NOT EXISTS game (
-              `gameID` int NOT NULL,
+              `gameID` int NOT NULL AUTO_INCREMENT,
               `gameName` varchar(256) NOT NULL,
               `whiteUsername` varchar(256) NULL,
               `blackUsername` varchar(256) NULL,
@@ -33,24 +32,27 @@ public class SqlGameDAO implements GameDAO {
 
     @Override
     public int addGame(String gameName) throws DataAccessException {
-        curID++;
-        return addGame(curID, gameName, null, null, new ChessGame());
+        return addGame(gameName, null, null, new ChessGame());
     }
 
-    private int addGame(int gameID, String gameName, String whiteUsername, String blackUsername, ChessGame game) throws DataAccessException {
-        String statement = "INSERT INTO game (gameID, whiteUsername, blackUsername, gameName, game) VALUES (?,?,?,?,?)";
+    private int addGame(String gameName, String whiteUsername, String blackUsername, ChessGame game) throws DataAccessException {
+        String statement = "INSERT INTO game (whiteUsername, blackUsername, gameName, game) VALUES (?,?,?,?)";
         try (var conn = DatabaseManager.getConnection()) {
-            var preparedStatement = conn.prepareStatement(statement);
-            preparedStatement.setInt(1, gameID);
-            preparedStatement.setString(2, whiteUsername);
-            preparedStatement.setString(3, blackUsername);
-            preparedStatement.setString(4, gameName);
+            var preparedStatement = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement.setString(1, whiteUsername);
+            preparedStatement.setString(2, blackUsername);
+            preparedStatement.setString(3, gameName);
 
             String gameJson = serializer.toJson(game);
-            preparedStatement.setString(5, gameJson);
+            preparedStatement.setString(4, gameJson);
 
             preparedStatement.executeUpdate();
-            return gameID;
+            try (ResultSet rs = preparedStatement.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+            throw new DataAccessException("Error: No gameID returned");
         } catch (SQLException e) {
             throw new DataAccessException("Error: Database access error");
         }
@@ -129,23 +131,13 @@ public class SqlGameDAO implements GameDAO {
     }
 
     private void deleteThenAddGame(GameData newGameData) throws DataAccessException {
-        var delStatement = "DELETE FROM game WHERE gameID=?";
+        var updateStatement = "UPDATE game SET whiteUsername = ?, blackUsername = ? WHERE gameID=?";
         try (var conn = DatabaseManager.getConnection()) {
-            try (var delPreparedStatement = conn.prepareStatement(delStatement)) {
-                delPreparedStatement.setInt(1, newGameData.gameID());
-                delPreparedStatement.executeUpdate();
-            }
-            var addStatement = "INSERT INTO game (gameID, whiteUsername, blackUsername, gameName, game) VALUES (?,?,?,?,?)";
-            try (var addPreparedStatement = conn.prepareStatement(addStatement)) {
-                addPreparedStatement.setInt(1, newGameData.gameID());
-                addPreparedStatement.setString(2, newGameData.whiteUsername());
-                addPreparedStatement.setString(3, newGameData.blackUsername());
-                addPreparedStatement.setString(4, newGameData.gameName());
-
-                String gameJson = serializer.toJson(newGameData.game());
-                addPreparedStatement.setString(5, gameJson);
-
-                addPreparedStatement.executeUpdate();
+            try (var preparedStatement = conn.prepareStatement(updateStatement)) {
+                preparedStatement.setString(1, newGameData.whiteUsername());
+                preparedStatement.setString(2, newGameData.blackUsername());
+                preparedStatement.setInt(3, newGameData.gameID());
+                preparedStatement.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
             throw new DataAccessException("Error: problem in updating game");
@@ -154,11 +146,14 @@ public class SqlGameDAO implements GameDAO {
 
     @Override
     public void clear() throws DataAccessException {
-        curID = 0;
-        var statement = "DELETE FROM game";
+        var statement1 = "DELETE FROM game;";
+        var statement2 = " ALTER TABLE game AUTO_INCREMENT = 1;";
         try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement( statement)) {
-                preparedStatement.executeUpdate();
+            try (var preparedStatement1 = conn.prepareStatement(statement1)) {
+                preparedStatement1.executeUpdate();
+            }
+            try (var preparedStatement2 = conn.prepareStatement(statement2)) {
+                preparedStatement2.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
             throw new DataAccessException("Error: error in deleting games");

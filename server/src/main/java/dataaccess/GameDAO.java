@@ -24,6 +24,9 @@ public interface GameDAO {
     }
 
     default void clear() throws DataAccessException {
+    }
 
+    default int getCurID() {
+        return 0;
     }
 }

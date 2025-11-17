@@ -94,14 +94,12 @@ public class PostloginClient {
         } catch (Exception ex) {
             handleError(ex, null);
         }
-        System.out.println("\nPress enter to go back");
-        String input = scanner.nextLine();
     }
 
     private void playGame(Scanner scanner, String auth) {
         GameData gameData = joinGame(scanner, auth);
 
-        System.out.println("What color would you like to play as?");
+        System.out.println("What color would you like to play as? (enter \"q\" to exit)");
         System.out.println("1: White\n2: Black");
         String colorNum = scanner.nextLine();
         String color;
@@ -113,7 +111,10 @@ public class PostloginClient {
             } else if (colorNum.equals("2")) {
                 color = "BLACK";
                 break;
-            } else {
+            } else if (colorNum.equals("q") || colorNum.equals("Q")) {
+                run(auth);
+            }
+            else {
                 System.out.println("Please enter 1 (White) or 2 (Black): ");
                 colorNum = scanner.nextLine();
             }
@@ -130,6 +131,7 @@ public class PostloginClient {
 
         } catch (Exception ex) {
             handleError(ex, color + " player ");
+            playGame(scanner, auth);
         }
     }
 
@@ -159,7 +161,7 @@ public class PostloginClient {
         if (gameNum.isEmpty()) {
             playGame(scanner, auth);
         }
-        if (!isNumeric(gameNum)) {
+        if (!isNumeric(gameNum) || Integer.parseInt(gameNum) < 0 || Integer.parseInt(gameNum) > gameMap.size()) {
             System.out.println("Please enter a number 1-" + gameMap.size());
             playGame(scanner, auth);
         }

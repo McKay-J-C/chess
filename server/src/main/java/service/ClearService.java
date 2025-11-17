@@ -15,6 +15,10 @@ public class ClearService {
         this.gameDAO = gameDAO;
     }
 
+    public int getGameCurID() {
+        return gameDAO.getCurID();
+    }
+
     public AuthDAO getAuthDAO() {
         return authDAO;
     }

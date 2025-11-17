@@ -35,29 +35,6 @@ public class GameplayClient {
             printGame(gameData.game().getBoard(), color);
         }
     }
-//
-//    private void printGame(ChessBoard board) {
-//        System.out.println();
-//        for (int i=1; i < 9; i++) {
-//            for (int j=8; j > 0; j--) {
-//                switchBackColor();
-//                ChessPosition pos = new ChessPosition(i, j);
-//                ChessPiece piece = board.getPiece(pos);
-//                if (piece == null) {
-//                    System.out.print(EMPTY);
-//                } else {
-//                    printPiece(piece);
-//                }
-////                System.out.print(Integer.toString(i) + Integer.toString(j));
-//                if (j == 1) {
-//                    switchBackColor();
-//                    System.out.print(SET_BG_COLOR_BLACK);
-//                    System.out.print("\n");
-//                }
-//            }
-//        }
-//        System.out.println();
-//    }
 
     private void printGame(ChessBoard board, ChessGame.TeamColor color) {
         System.out.println();

@@ -175,8 +175,8 @@ public class ServerFacadeTests {
         createJoinBobsGame(newAuth);
 
         HashSet<GameData> testGames2 = new HashSet<>();
-        testGames2.add(new GameData(1, null, null, "Bobs Game", new ChessGame()));
-        Assertions.assertEquals(facade.listGames(new ListGamesRequest(auth), auth).games(), testGames2);
+        testGames2.add(new GameData(1, "Bob", null, "Bobs Game", new ChessGame()));
+        Assertions.assertEquals(facade.listGames(new ListGamesRequest(newAuth), newAuth).games(), testGames2);
     }
 
     private RegisterResponse registerBob() {
@@ -232,7 +232,5 @@ public class ServerFacadeTests {
         RegisterResponse registerResponse = registerDave();
         return createJoinDavesGame(registerResponse.authToken());
     }
-//    private AuthData registerBob() {
-//        return facade.register(new RegisterRequest("Bob", "goCougs27", "gamil@gmail.com"));
-//    }
+
 }

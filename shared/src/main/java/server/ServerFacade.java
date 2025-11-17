@@ -94,10 +94,6 @@ public class ServerFacade {
     private <T> T handleResponse(HttpResponse<String> response, Class<T> responseClass) throws ResponseException {
         var status = response.statusCode();
         if (!successful(status)) {
-//            var body = response.body();
-//            if (body != null) {
-//                throw new ResponseException(body);
-//            }
             throw new ResponseException(Integer.toString(status));
         }
         if (responseClass != null) {
