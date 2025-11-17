@@ -1,4 +1,4 @@
-package Client;
+package client;
 
 import request.LoginRequest;
 import request.RegisterRequest;

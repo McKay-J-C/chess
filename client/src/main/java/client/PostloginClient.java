@@ -1,4 +1,4 @@
-package Client;
+package client;
 
 import chess.ChessGame;
 import model.GameData;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
 
-import static Client.PreloginClient.handleError;
+import static client.PreloginClient.handleError;
 import static chess.ChessGame.TeamColor.*;
 
 public class PostloginClient {

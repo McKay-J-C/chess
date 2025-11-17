@@ -106,9 +106,4 @@ public class ServerFacade {
         return status / 100 == 2;
     }
 
-    private boolean hasAuth(HttpRequest request) {
-        HttpHeaders headers = request.headers();
-        return headers.firstValue("authorization").isPresent();
-    }
-
 }
