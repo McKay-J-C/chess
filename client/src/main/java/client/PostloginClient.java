@@ -98,7 +98,9 @@ public class PostloginClient {
 
     private void playGame(Scanner scanner, String auth) {
         GameData gameData = joinGame(scanner, auth);
-
+        if (gameData == null) {
+            return;
+        }
         System.out.println("What color would you like to play as? (enter \"q\" to exit)");
         System.out.println("1: White\n2: Black");
         String colorNum = scanner.nextLine();
@@ -112,7 +114,7 @@ public class PostloginClient {
                 color = "BLACK";
                 break;
             } else if (colorNum.equals("q") || colorNum.equals("Q")) {
-                run(auth);
+                return;
             }
             else {
                 System.out.println("Please enter 1 (White) or 2 (Black): ");
@@ -137,6 +139,9 @@ public class PostloginClient {
 
     private void observeGame(Scanner scanner, String auth) {
         GameData gameData = joinGame(scanner, auth);
+        if (gameData == null) {
+            return;
+        }
         enterGameplay(auth, gameData, WHITE);
     }
 
@@ -156,12 +161,14 @@ public class PostloginClient {
 
     private GameData joinGame(Scanner scanner, String auth) {
         listGames(scanner, auth);
-        System.out.println("Enter the number for the game you would like to join: ");
+        System.out.println("Enter the number for the game you would like to join (Enter \"q\" to quit)");
         String gameNum = scanner.nextLine();
         if (gameNum.isEmpty()) {
             playGame(scanner, auth);
         }
-        if (!isNumeric(gameNum) || Integer.parseInt(gameNum) < 0 || Integer.parseInt(gameNum) > gameMap.size()) {
+        if (gameNum.equals("q")) {
+            return null;
+        } else if (!isNumeric(gameNum) || Integer.parseInt(gameNum) < 0 || Integer.parseInt(gameNum) > gameMap.size()) {
             System.out.println("Please enter a number 1-" + gameMap.size());
             playGame(scanner, auth);
         }

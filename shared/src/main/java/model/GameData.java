@@ -30,7 +30,16 @@ public record GameData(
 
     @Override
     public String toString() {
-        return gameName + "\nWhite Player: " + whiteUsername
-                + "\nBlack Player: " + blackUsername;
+        String whiteName = whiteUsername;
+        String blackName = blackUsername;
+        if (whiteName == null) {
+            whiteName = "Available";
+        }
+        if (blackName == null) {
+            blackName = "Available";
+        }
+
+        return gameName + "\nWhite Player: " + whiteName
+                + "\nBlack Player: " + blackName;
     }
 }
