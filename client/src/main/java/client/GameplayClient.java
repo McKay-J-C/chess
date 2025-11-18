@@ -11,6 +11,7 @@ import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 import static ui.EscapeSequences.BLACK_KING;
+import static ui.EscapeSequences.BLACK_KNIGHT;
 import static ui.EscapeSequences.BLACK_PAWN;
 
 public class GameplayClient {
@@ -87,46 +88,24 @@ public class GameplayClient {
         }
     }
 
+    public String getSymbol(ChessPiece piece) {
+        return switch (piece.getPieceType()) {
+            case ROOK -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_ROOK : BLACK_ROOK;
+            case KNIGHT -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_KNIGHT : BLACK_KNIGHT;
+            case BISHOP -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_BISHOP : BLACK_BISHOP;
+            case QUEEN -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_QUEEN : BLACK_QUEEN;
+            case KING -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_KING : BLACK_KING;
+            case PAWN -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_PAWN : BLACK_PAWN;
+        };
+    }
+
     private void printPiece(ChessPiece piece) {
         if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-            printWhitePiece(piece.getPieceType());
+            System.out.print(SET_TEXT_COLOR_WHITE);
         } else {
-            printBlackPiece(piece.getPieceType());
+            System.out.print(SET_TEXT_COLOR_BLACK);
         }
-    }
-
-    private void printWhitePiece(ChessPiece.PieceType type) {
-        System.out.print(SET_TEXT_COLOR_WHITE);
-        if (type == ChessPiece.PieceType.ROOK) {
-            System.out.print(WHITE_ROOK);
-        } else if (type == ChessPiece.PieceType.KNIGHT){
-            System.out.print(WHITE_KNIGHT);
-        } else if (type == ChessPiece.PieceType.BISHOP){
-            System.out.print(WHITE_BISHOP);
-        } else if (type == ChessPiece.PieceType.QUEEN){
-            System.out.print(WHITE_QUEEN);
-        } else if (type == ChessPiece.PieceType.KING){
-            System.out.print(WHITE_KING);
-        } else {
-            System.out.print(WHITE_PAWN);
-        }
-    }
-
-    private void printBlackPiece(ChessPiece.PieceType type) {
-        System.out.print(SET_TEXT_COLOR_BLACK);
-        if (type == ChessPiece.PieceType.ROOK) {
-            System.out.print(BLACK_ROOK);
-        } else if (type == ChessPiece.PieceType.KNIGHT){
-            System.out.print(BLACK_KNIGHT);
-        } else if (type == ChessPiece.PieceType.BISHOP){
-            System.out.print(BLACK_BISHOP);
-        } else if (type == ChessPiece.PieceType.QUEEN){
-            System.out.print(BLACK_QUEEN);
-        } else if (type == ChessPiece.PieceType.KING){
-            System.out.print(BLACK_KING);
-        } else {
-            System.out.print(BLACK_PAWN);
-        }
+        System.out.print(getSymbol(piece));
     }
 
     private void switchBackColor() {

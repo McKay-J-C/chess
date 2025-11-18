@@ -213,11 +213,6 @@ public class ServerFacadeTests {
         return createDavesGame(registerResponse.authToken());
     }
 
-    private JoinGameResponse registerJoinBobsGame() {
-        RegisterResponse registerResponse = registerBob();
-        return createJoinBobsGame(registerResponse.authToken());
-    }
-
     private JoinGameResponse createJoinBobsGame(String auth) {
         createBobsGame(auth);
         return joinBobsGames(auth);
