@@ -41,10 +41,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             UserGameCommand userGameCommand = new Gson().fromJson(ctx.message(), UserGameCommand.class);
             String username = authDAO.getAuth(userGameCommand.getAuthToken()).username();
             switch (userGameCommand.getCommandType()) {
-                case CONNECT -> connect(new ConnectCommand(UserGameCommand.CommandType.CONNECT, userGameCommand.getAuthToken(), userGameCommand.getGameID(), username, userGameCommand.getColor()), ctx.session);
-                case RESIGN -> resign(new ResignCommand(UserGameCommand.CommandType.RESIGN, userGameCommand.getAuthToken(), userGameCommand.getGameID(), username, userGameCommand.getColor()), ctx.session);
-                case LEAVE -> leave(new LeaveCommand(UserGameCommand.CommandType.LEAVE, userGameCommand.getAuthToken(), userGameCommand.getGameID(), username, userGameCommand.getColor()), ctx.session);
-                case MAKE_MOVE -> makeMove(new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, userGameCommand.getAuthToken(), userGameCommand.getGameID(), new ChessMove(null, null, null), username, userGameCommand.getColor()), ctx.session);
+                case CONNECT -> connect(new ConnectCommand(UserGameCommand.CommandType.CONNECT, userGameCommand.getAuthToken(), userGameCommand.getGameID(), username, ChessGame.TeamColor.WHITE), ctx.session);
+                case RESIGN -> resign(new ResignCommand(UserGameCommand.CommandType.RESIGN, userGameCommand.getAuthToken(), userGameCommand.getGameID(), username, ChessGame.TeamColor.WHITE), ctx.session);
+                case LEAVE -> leave(new LeaveCommand(UserGameCommand.CommandType.LEAVE, userGameCommand.getAuthToken(), userGameCommand.getGameID(), username, ChessGame.TeamColor.WHITE), ctx.session);
+                case MAKE_MOVE -> makeMove(new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, userGameCommand.getAuthToken(), userGameCommand.getGameID(), new ChessMove(null, null, null), username, ChessGame.TeamColor.WHITE), ctx.session);
             }
             new Gson().fromJson(ctx.message(), UserGameCommand.class);
         } catch (Exception ex) {
