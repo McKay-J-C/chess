@@ -7,6 +7,7 @@ import io.javalin.http.Context;
 import org.jetbrains.annotations.NotNull;
 import response.*;
 import request.*;
+import server.websocket.WebSocketHandler;
 import service.BadRequestException;
 import service.ClearService;
 import service.GameService;
@@ -19,6 +20,7 @@ public class Server {
     private final ClearService clearService;
     private final GameService gameService;
     private final UserService userService;
+    private final WebSocketHandler webSocketHandler;
 
     public Server() {
         this(new ClearService(new SqlUserDAO(), new SqlAuthDAO(), new SqlGameDAO()),
@@ -33,6 +35,8 @@ public class Server {
         this.gameService = gameService;
         this.userService = userService;
 
+        webSocketHandler = new WebSocketHandler();
+
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
                 .post("/user", this::registerHandler)
                 .post("/session", this::loginHandler)
@@ -41,7 +45,12 @@ public class Server {
                 .get("/game", this::listGamesHandler)
                 .put("/game", this::joinGameHandler)
                 .delete("/db", this::clearHandler)
-                .exception(Exception.class, this::exceptionHandler);
+                .exception(Exception.class, this::exceptionHandler)
+                .ws("/ws", ws -> {
+                    ws.onConnect(webSocketHandler);
+                    ws.onMessage(webSocketHandler);
+                    ws.onClose(webSocketHandler);
+                });
     }
 
     private void exceptionHandler(@NotNull Exception ex, @NotNull Context context) {
