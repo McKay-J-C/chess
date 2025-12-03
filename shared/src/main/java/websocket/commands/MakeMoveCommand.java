@@ -6,11 +6,10 @@ import chess.ChessMove;
 public class MakeMoveCommand extends UserGameCommand {
 
     private final ChessMove move;
-    private final String username;
+    private String username;
 
-    public MakeMoveCommand(CommandType commandType, String authToken, Integer gameID, ChessMove move, String username, ChessGame.TeamColor color) {
+    public MakeMoveCommand(CommandType commandType, String authToken, Integer gameID, ChessMove move, ChessGame.TeamColor color) {
         super(commandType, authToken, gameID, color);
-        this.username = username;
         assert commandType.equals(CommandType.MAKE_MOVE);
         this.move = move;
     }
@@ -22,4 +21,9 @@ public class MakeMoveCommand extends UserGameCommand {
     public String getUsername() {
         return username;
     }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
 }
