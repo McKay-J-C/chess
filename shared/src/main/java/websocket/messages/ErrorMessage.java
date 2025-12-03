@@ -7,6 +7,7 @@ public class ErrorMessage extends ServerMessage {
     public ErrorMessage(ServerMessageType type, String message) {
         super(type);
         errorMessage = message;
+        assert type.equals(ServerMessageType.ERROR);
     }
 
     public String getErrorMessage() {
