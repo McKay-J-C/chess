@@ -46,7 +46,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 sendError(session, "Unauthorized");
                 return;
             }
-            String username = authData.username();
 
             switch (userGameCommand.getCommandType()) {
                 case CONNECT -> {
@@ -113,6 +112,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void makeMove(MakeMoveCommand makeMoveCommand, Session session) throws DataAccessException, IOException, InvalidMoveException {
+        ChessGame.TeamColor moveColor = makeMoveCommand.getColor();
+
         ChessMove move = makeMoveCommand.getMove();
         GameData gameData = gameDAO.getGame(makeMoveCommand.getGameID());
         if (gameData == null) {
@@ -122,7 +123,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         ChessGame game = gameData.game();
         try {
-            executeMove(game, move, session, makeMoveCommand.getColor());
+            executeMove(gameData, move, session, makeMoveCommand.getColor());
         } catch (InvalidMoveException ex) {
             sendError(session, String.format("Invalid move: %s", ex.getMessage()));
             return;
@@ -138,11 +139,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         NotificationMessage notificationMessage = new NotificationMessage(NOTIFICATION, moveMessage);
         connections.broadcast(session, notificationMessage);
 
-        verifyCheck(makeMoveCommand, game);
+        verifyCheck(makeMoveCommand, gameData);
 
     }
 
-    private void executeMove(ChessGame game, ChessMove move, Session session, ChessGame.TeamColor color) throws InvalidMoveException, IOException {
+    private void executeMove(GameData gameData, ChessMove move, Session session, ChessGame.TeamColor color) throws InvalidMoveException, IOException, DataAccessException {
+        ChessGame game = gameData.game();
+        ChessGame.TeamColor colorTurn = game.getTeamTurn();
+        if (colorTurn == null) {
+            throw new InvalidMoveException("Game is over");
+        }
+
         ChessPiece movingPiece = game.getBoard().getPiece(move.getStartPosition());
 
         if (movingPiece.getTeamColor() == null) {
@@ -154,30 +161,45 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         game.makeMove(move);
     }
 
-    private void verifyCheck(MakeMoveCommand makeMoveCommand, ChessGame game) throws IOException {
+    private void verifyCheck(MakeMoveCommand makeMoveCommand, GameData gameData) throws IOException, DataAccessException {
         ChessGame.TeamColor checkColor = ChessGame.TeamColor.WHITE;
         String checkMessage = "";
         boolean needMessage = false;
-        if (makeMoveCommand.getColor() == ChessGame.TeamColor.WHITE) {
+        boolean gameOver = false;
+        ChessGame.TeamColor moveColor = makeMoveCommand.getColor();
+        if (moveColor == ChessGame.TeamColor.WHITE) {
             checkColor = ChessGame.TeamColor.BLACK;
         }
 
+        ChessGame game = gameData.game();
         if (game.isInCheck(checkColor)) {
             needMessage = true;
-            checkMessage = String.format("%s player is in check", checkColor);
+            checkMessage = String.format("%s player is in check!", checkColor);
             if (game.isInCheckmate(checkColor)) {
-                checkMessage = String.format("%s player is in checkmate", checkColor);
+                checkMessage = String.format("%s player is in checkmate! %s player wins!", checkColor, moveColor);
+                gameOver = true;
             }
         }
 
         if (game.isInStalemate(checkColor)) {
             needMessage = true;
-            checkMessage = String.format("%s player is in stalemate", checkColor);
+            gameOver = true;
+            checkMessage = String.format("%s player is in stalemate! You tie!", checkColor);
         }
 
         if (needMessage) {
             NotificationMessage notificationMessage = new NotificationMessage(NOTIFICATION, checkMessage);
             connections.broadcast(null, notificationMessage);
+            if (gameOver) {
+                endGame(gameData);
+            }
         }
+    }
+
+    private void endGame(GameData gameData) throws DataAccessException {
+        ChessGame game = gameData.game();
+        game.setTeamTurn(null);
+        GameData newGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
+        gameDAO.deleteThenAddGame(newGameData);
     }
 }
