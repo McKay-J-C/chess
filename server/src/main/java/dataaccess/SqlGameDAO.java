@@ -130,7 +130,8 @@ public class SqlGameDAO implements GameDAO {
         deleteThenAddGame(newGameData);
     }
 
-    private void deleteThenAddGame(GameData newGameData) throws DataAccessException {
+    @Override
+    public void deleteThenAddGame(GameData newGameData) throws DataAccessException {
         var updateStatement = "UPDATE game SET whiteUsername = ?, blackUsername = ? WHERE gameID=?";
         try (var conn = DatabaseManager.getConnection()) {
             try (var preparedStatement = conn.prepareStatement(updateStatement)) {

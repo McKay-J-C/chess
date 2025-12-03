@@ -23,6 +23,9 @@ public interface GameDAO {
 
     }
 
+    default void deleteThenAddGame(GameData newGameData) throws DataAccessException {
+    }
+
     default void clear() throws DataAccessException {
     }
 
