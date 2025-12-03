@@ -5,7 +5,6 @@ import dataaccess.*;
 import io.javalin.*;
 import io.javalin.http.Context;
 import org.jetbrains.annotations.NotNull;
-
 import response.*;
 import request.*;
 import service.BadRequestException;
