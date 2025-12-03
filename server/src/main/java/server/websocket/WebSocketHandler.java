@@ -4,6 +4,7 @@ import chess.ChessGame;
 import chess.ChessMove;
 import com.google.gson.Gson;
 import dataaccess.*;
+import model.*;
 import org.jetbrains.annotations.NotNull;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsCloseHandler;
@@ -55,11 +56,20 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void connect(ConnectCommand connectCommand, Session session) throws IOException, DataAccessException {
         connections.add(session);
 
+        GameData gameData = gameDAO.getGame(connectCommand.getGameID());
+        if (gameData == null) {
+            ErrorMessage errorMessage = new ErrorMessage(ERROR, "Game does not exist");
+            String errorMessageJson = new Gson().toJson(errorMessage);
+            session.getRemote().sendString(errorMessageJson);
+            return;
+        }
+
         String message = String.format("%s entered the game as %s", connectCommand.getUsername(), connectCommand.getColor().name());
         NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(session, notificationMessage);
 
-        ChessGame game = gameDAO.getGame(connectCommand.getGameID()).game();
+
+        ChessGame game = gameData.game();
         LoadGameMessage loadGameMessage = new LoadGameMessage(LOAD_GAME, game);
         String loadGameMessageJson = new Gson().toJson(loadGameMessage);
         session.getRemote().sendString(loadGameMessageJson);
