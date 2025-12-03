@@ -40,7 +40,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     public void handleMessage(@NotNull WsMessageContext ctx) throws Exception {
         try {
             UserGameCommand userGameCommand = new Gson().fromJson(ctx.message(), UserGameCommand.class);
-            String username = authDAO.getAuth(userGameCommand.getAuthToken()).username();
+            AuthData authData = authDAO.getAuth(userGameCommand.getAuthToken());
+            if (authData == null) {
+                sendError(ctx.session, "Unauthorized");
+                return;
+            }
+            String username = authData.username();
+
             switch (userGameCommand.getCommandType()) {
                 case CONNECT -> connect(new ConnectCommand(UserGameCommand.CommandType.CONNECT, userGameCommand.getAuthToken(), userGameCommand.getGameID(), username, ChessGame.TeamColor.WHITE), ctx.session);
                 case RESIGN -> resign(new ResignCommand(UserGameCommand.CommandType.RESIGN, userGameCommand.getAuthToken(), userGameCommand.getGameID(), username, ChessGame.TeamColor.WHITE), ctx.session);
@@ -48,6 +54,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 case MAKE_MOVE -> makeMove(new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, userGameCommand.getAuthToken(), userGameCommand.getGameID(), new ChessMove(null, null, null), username, ChessGame.TeamColor.WHITE), ctx.session);
             }
             new Gson().fromJson(ctx.message(), UserGameCommand.class);
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -58,9 +65,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         GameData gameData = gameDAO.getGame(connectCommand.getGameID());
         if (gameData == null) {
-            ErrorMessage errorMessage = new ErrorMessage(ERROR, "Game does not exist");
-            String errorMessageJson = new Gson().toJson(errorMessage);
-            session.getRemote().sendString(errorMessageJson);
+            sendError(session, "Game does not exist");
             return;
         }
 
@@ -68,11 +73,16 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(session, notificationMessage);
 
-
         ChessGame game = gameData.game();
         LoadGameMessage loadGameMessage = new LoadGameMessage(LOAD_GAME, game);
         String loadGameMessageJson = new Gson().toJson(loadGameMessage);
         session.getRemote().sendString(loadGameMessageJson);
+    }
+
+    private void sendError(Session session, String message) throws IOException {
+        ErrorMessage errorMessage = new ErrorMessage(ERROR, message);
+        String errorMessageJson = new Gson().toJson(errorMessage);
+        session.getRemote().sendString(errorMessageJson);
     }
 
     private void resign(ResignCommand resignCommand, Session session) {
