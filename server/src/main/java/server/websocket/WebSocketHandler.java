@@ -1,9 +1,6 @@
 package server.websocket;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPosition;
-import chess.InvalidMoveException;
+import chess.*;
 import com.google.gson.Gson;
 import dataaccess.*;
 import model.*;
@@ -125,9 +122,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         ChessGame game = gameData.game();
         try {
-            game.makeMove(move);
+            executeMove(game, move, session, makeMoveCommand.getColor());
         } catch (InvalidMoveException ex) {
             sendError(session, String.format("Invalid move: %s", ex.getMessage()));
+            return;
         }
 
         GameData newGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
@@ -142,6 +140,18 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         verifyCheck(makeMoveCommand, game);
 
+    }
+
+    private void executeMove(ChessGame game, ChessMove move, Session session, ChessGame.TeamColor color) throws InvalidMoveException, IOException {
+        ChessPiece movingPiece = game.getBoard().getPiece(move.getStartPosition());
+
+        if (movingPiece.getTeamColor() == null) {
+            throw new InvalidMoveException("No piece at location");
+        }
+        if (movingPiece.getTeamColor() != color) {
+            throw new InvalidMoveException("Wrong color piece at location");
+        }
+        game.makeMove(move);
     }
 
     private void verifyCheck(MakeMoveCommand makeMoveCommand, ChessGame game) throws IOException {
