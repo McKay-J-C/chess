@@ -115,13 +115,13 @@ public class SqlGameDAO implements GameDAO {
         }
         GameData newGameData;
         if (teamColor == ChessGame.TeamColor.WHITE) {
-            if (gameData.whiteUsername() != null) {
+            if (gameData.whiteUsername() != null && username != null) {
                 throw new DataAccessException.AlreadyTakenException("Error: White player already taken");
             }
             newGameData = new GameData(
                     gameID, username, gameData.blackUsername(), gameData.gameName(), gameData.game());
         } else {
-            if (gameData.blackUsername() != null) {
+            if (gameData.blackUsername() != null && username != null) {
                 throw new DataAccessException.AlreadyTakenException("Error: Black player already taken");
             }
             newGameData = new GameData(

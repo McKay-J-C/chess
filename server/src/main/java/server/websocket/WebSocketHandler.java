@@ -62,7 +62,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 case LEAVE -> {
                     LeaveCommand leaveCommand = new LeaveCommand(UserGameCommand.CommandType.LEAVE,
                             userGameCommand.getAuthToken(), userGameCommand.getGameID(), username, color);
-                    leave(leaveCommand, session);
+                    leave(leaveCommand, session, color);
                 }
                 case MAKE_MOVE -> {
                     MakeMoveCommand makeMoveCommand = new Gson().fromJson(ctx.message(), MakeMoveCommand.class);
@@ -88,9 +88,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private ChessGame.TeamColor getTeamColor(GameData gameData, String username) {
         ChessGame.TeamColor color = null;
-        if (gameData.whiteUsername().equals(username)) {
+        String whiteUsername = gameData.whiteUsername();
+        String blackUsername = gameData.blackUsername();
+        if (whiteUsername != null && whiteUsername.equals(username)) {
             color = ChessGame.TeamColor.WHITE;
-        } else if (gameData.blackUsername().equals(username)){
+        } else if (blackUsername != null && blackUsername.equals(username)){
             color = ChessGame.TeamColor.BLACK;
         }
         return color;
@@ -107,21 +109,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void connect(ConnectCommand connectCommand, Session session) throws IOException, DataAccessException {
         int gameID = connectCommand.getGameID();
 
-        GameData gameData = gameDAO.getGame(gameID);
-        if (gameData == null) {
-            sendError(session, "Game does not exist");
-            return;
-        }
+        GameData gameData = getGameData(gameID, session);
+        if (gameData == null) return;
         ChessGame game = gameData.game();
 
-        String color;
         ChessGame.TeamColor foundColor = connectCommand.getColor();
-        if (foundColor == null) {
-            color = "Unknown";
-        } else {
-            color = foundColor.name();
-        }
-
+        String color = makeColorString(foundColor);
         connections.add(session, gameID, foundColor);
 
         String message = String.format("%s entered the game as %s", connectCommand.getUsername(), color);
@@ -131,6 +124,16 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         LoadGameMessage loadGameMessage = new LoadGameMessage(LOAD_GAME, game);
         String loadGameMessageJson = new Gson().toJson(loadGameMessage);
         session.getRemote().sendString(loadGameMessageJson);
+    }
+
+    private String makeColorString(ChessGame.TeamColor foundColor) {
+        String color;
+        if (foundColor == null) {
+            color = "";
+        } else {
+            color = "as " + foundColor.name();
+        }
+        return color;
     }
 
     private void sendError(Session session, String message) throws IOException {
@@ -163,8 +166,15 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.broadcast(null, notificationMessage, resignCommand.getGameID());
     }
 
-    private void leave(LeaveCommand leaveCommand, Session session) {
+    private void leave(LeaveCommand leaveCommand, Session session, ChessGame.TeamColor color) throws IOException, DataAccessException {
+        connections.remove(session, leaveCommand.getGameID(), color);
+        if (color != null) {
+            gameDAO.updateGame(leaveCommand.getGameID(), color, null);
+        }
 
+        String leaveMessage = String.format("%s left the game", leaveCommand.getUsername());
+        NotificationMessage notificationMessage = new NotificationMessage(NOTIFICATION, leaveMessage);
+        connections.broadcast(session, notificationMessage, leaveCommand.getGameID());
     }
 
     private void makeMove(MakeMoveCommand makeMoveCommand, Session session) throws DataAccessException, IOException, InvalidMoveException {
@@ -260,4 +270,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         String gameJson = new Gson().toJson(game);
         gameDAO.updateMove(gameJson, gameData.gameID());
     }
+
+//    private void clear() {
+//        connections.clear();
+//    }
 }

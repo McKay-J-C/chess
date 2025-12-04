@@ -9,7 +9,6 @@ import websocket.messages.*;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
     public final HashMap<Integer, GameConnections> connections = new HashMap<>();
