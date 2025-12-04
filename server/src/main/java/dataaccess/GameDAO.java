@@ -20,7 +20,9 @@ public interface GameDAO {
     }
 
     default void updateGame(int gameID, ChessGame.TeamColor teamColor, String username) throws DataAccessException {
+    }
 
+    default void updateMove(String gameJson, int gameID) throws DataAccessException {
     }
 
     default void deleteThenAddGame(GameData newGameData) throws DataAccessException {

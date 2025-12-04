@@ -39,15 +39,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     public void handleMessage(@NotNull WsMessageContext ctx) throws Exception {
         try {
             UserGameCommand userGameCommand = new Gson().fromJson(ctx.message(), UserGameCommand.class);
-
-
             Session session = ctx.session;
 
             String username = authorizeUser(userGameCommand.getAuthToken(), session);
             if (username == null) {
                 return;
             }
-
             GameData gameData = getGameData(userGameCommand.getGameID(), session);
             ChessGame.TeamColor color = getTeamColor(gameData, username);
 
@@ -155,23 +152,20 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         ChessMove move = makeMoveCommand.getMove();
         int gameID = makeMoveCommand.getGameID();
-        GameData gameData = gameDAO.getGame(gameID);
-        if (gameData == null) {
-            sendError(session, "Game does not exist");
-            return;
-        }
 
-        ChessGame game = gameData.game();
+        GameData gameData = getGameData(gameID, session);
+        ChessGame game;
 
         try {
-            executeMove(gameData, move, session, makeMoveCommand.getColor());
+            game = executeMove(gameData, move, session, moveColor);
         } catch (InvalidMoveException ex) {
             sendError(session, String.format("Invalid move: %s", ex.getMessage()));
             return;
         }
 
         GameData newGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
-        gameDAO.deleteThenAddGame(newGameData);
+        String gameJson = new Gson().toJson(newGameData.game());
+        gameDAO.updateMove(gameJson, gameID);
 
         LoadGameMessage loadGameMessage = new LoadGameMessage(LOAD_GAME, game);
         connections.broadcast(null, loadGameMessage, gameID);
@@ -180,10 +174,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         NotificationMessage notificationMessage = new NotificationMessage(NOTIFICATION, moveMessage);
         connections.broadcast(session, notificationMessage, gameID);
 
-        verifyCheck(makeMoveCommand, gameData);
+        verifyCheck(makeMoveCommand, newGameData);
     }
 
-    private void executeMove(GameData gameData, ChessMove move, Session session, ChessGame.TeamColor color) throws InvalidMoveException, IOException, DataAccessException {
+    private ChessGame executeMove(GameData gameData, ChessMove move, Session session, ChessGame.TeamColor color) throws InvalidMoveException, IOException, DataAccessException {
         ChessGame game = gameData.game();
         ChessGame.TeamColor colorTurn = game.getTeamTurn();
         if (colorTurn == null) {
@@ -199,6 +193,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             throw new InvalidMoveException("Wrong color piece at location");
         }
         game.makeMove(move);
+        return game;
     }
 
     private void verifyCheck(MakeMoveCommand makeMoveCommand, GameData gameData) throws IOException, DataAccessException {
