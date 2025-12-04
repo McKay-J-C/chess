@@ -16,12 +16,13 @@ public class ChessGame {
     private ChessBoard board;
     private ChessPosition blackKingPos;
     private ChessPosition whiteKingPos;
-    private boolean gameOver = false;
+    private int gameOver;
 
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
         board = new ChessBoard();
         board.resetBoard();
+        gameOver = 0;
         //Keeping track of King position makes check easier
         whiteKingPos = new ChessPosition(1, 5);
         blackKingPos = new ChessPosition(8, 5);
@@ -44,11 +45,11 @@ public class ChessGame {
     }
 
     public boolean isGameOver() {
-        return gameOver;
+        return gameOver != 0;
     }
 
     public void gameOver() {
-        gameOver = false;
+        gameOver = 1;
     }
 
     /**

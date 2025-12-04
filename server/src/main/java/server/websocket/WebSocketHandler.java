@@ -141,16 +141,24 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void resign(ResignCommand resignCommand, Session session) throws IOException, DataAccessException {
         GameData gameData = getGameData(resignCommand.getGameID(), session);
+        if (gameData.game().isGameOver()) {
+            sendError(session, "Game is already resigned");
+            return;
+        }
         endGame(gameData);
 
         ChessGame.TeamColor winColor;
+        if (resignCommand.getColor() == null) {
+            sendError(session, "Observer cannot resign match");
+            return;
+        }
         if (resignCommand.getColor() == ChessGame.TeamColor.WHITE) {
             winColor = ChessGame.TeamColor.BLACK;
         } else {
             winColor = ChessGame.TeamColor.WHITE;
         }
 
-        String resignMessage = String.format("%s resigned. %s player wins!", resignCommand.getUsername(), winColor);
+        String resignMessage = String.format("%s resigned - %s player wins!", resignCommand.getUsername(), winColor);
         NotificationMessage notificationMessage = new NotificationMessage(NOTIFICATION, resignMessage);
         connections.broadcast(null, notificationMessage, resignCommand.getGameID());
     }
