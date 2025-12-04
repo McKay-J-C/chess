@@ -47,9 +47,9 @@ public class UserGameCommand {
         return color;
     }
 
-//    public void setColor(ChessGame.TeamColor color) {
-//        this.color = color;
-//    }
+    public void setColor(ChessGame.TeamColor color) {
+        this.color = color;
+    }
 
     @Override
     public boolean equals(Object o) {

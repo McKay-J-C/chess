@@ -39,22 +39,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     public void handleMessage(@NotNull WsMessageContext ctx) throws Exception {
         try {
             UserGameCommand userGameCommand = new Gson().fromJson(ctx.message(), UserGameCommand.class);
-            AuthData authData = authDAO.getAuth(userGameCommand.getAuthToken());
+
 
             Session session = ctx.session;
-            if (authData == null) {
-                sendError(session, "Unauthorized");
+
+            String username = authorizeUser(userGameCommand.getAuthToken(), session);
+            if (username == null) {
                 return;
             }
-            String username = authData.username();
 
-            ChessGame.TeamColor color = null;
-            GameData gameData = gameDAO.getGame(userGameCommand.getGameID());
-            if (gameData.whiteUsername().equals(username)) {
-                color = ChessGame.TeamColor.WHITE;
-            } else if (gameData.blackUsername().equals(username)){
-                color = ChessGame.TeamColor.BLACK;
-            }
+            GameData gameData = getGameData(userGameCommand.getGameID(), session);
+            ChessGame.TeamColor color = getTeamColor(gameData, username);
 
             switch (userGameCommand.getCommandType()) {
                 case CONNECT -> {
@@ -75,6 +70,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 case MAKE_MOVE -> {
                     MakeMoveCommand makeMoveCommand = new Gson().fromJson(ctx.message(), MakeMoveCommand.class);
                     makeMoveCommand.setUsername(username);
+                    makeMoveCommand.setColor(color);
                     makeMove(makeMoveCommand, session);
                 }
             }
@@ -82,6 +78,33 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    private String authorizeUser(String authToken, Session session) throws DataAccessException, IOException {
+        AuthData authData = authDAO.getAuth(authToken);
+        if (authData == null) {
+            sendError(session, "Unauthorized");
+            return null;
+        }
+        return authData.username();
+    }
+
+    private ChessGame.TeamColor getTeamColor(GameData gameData, String username) {
+        ChessGame.TeamColor color = null;
+        if (gameData.whiteUsername().equals(username)) {
+            color = ChessGame.TeamColor.WHITE;
+        } else if (gameData.blackUsername().equals(username)){
+            color = ChessGame.TeamColor.BLACK;
+        }
+        return color;
+    }
+
+    private GameData getGameData(int gameID, Session session) throws DataAccessException, IOException {
+        GameData gameData = gameDAO.getGame(gameID);
+        if (gameData == null) {
+            sendError(session, "No game with given gameID");
+        }
+        return gameData;
     }
 
     private void connect(ConnectCommand connectCommand, Session session) throws IOException, DataAccessException {
