@@ -14,17 +14,26 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConnectionManager {
     public final HashMap<Integer, GameConnections> connections = new HashMap<>();
 
+    public void addGame(int gameID) {
+        connections.put(gameID, new GameConnections());
+    }
+
     public void add(Session session, int gameID, ChessGame.TeamColor color) {
         GameConnections gameConnections = connections.get(gameID);
-        checkTaken(gameConnections, color);
+        if (gameConnections == null) {
+            addGame(gameID);
+            gameConnections = connections.get(gameID);
+        } else {
+            checkTaken(gameConnections, color);
+        }
         addPlayer(gameConnections, color, session);
         connections.put(gameID, gameConnections);
     }
 
     private void checkTaken(GameConnections gameConnections, ChessGame.TeamColor color) {
-        if (color == ChessGame.TeamColor.BLACK && !gameConnections.getBlackPlayer().isOpen()) {
+        if (color == ChessGame.TeamColor.BLACK && gameConnections.getBlackPlayer() != null) {
             throw new DataAccessException.AlreadyTakenException("Black player already taken");
-        } else if (color == ChessGame.TeamColor.WHITE && !gameConnections.getWhitePlayer().isOpen()) {
+        } else if (color == ChessGame.TeamColor.WHITE && gameConnections.getWhitePlayer() != null) {
             throw new DataAccessException.AlreadyTakenException("White player already taken");
         }
     }
@@ -62,7 +71,7 @@ public class ConnectionManager {
         Session whitePlayer = gameConnections.getWhitePlayer();
         sendSessionMessage(whitePlayer, excludeSession, msg);
 
-        Session blackPlayer = gameConnections.getWhitePlayer();
+        Session blackPlayer = gameConnections.getBlackPlayer();
         sendSessionMessage(blackPlayer, excludeSession, msg);
 
         for (Session c : gameConnections.getObservers()) {
@@ -71,7 +80,8 @@ public class ConnectionManager {
     }
 
     private void sendSessionMessage(Session session, Session excludeSession, String msg) throws IOException {
-        if (session.isOpen()) {
+
+        if (session != null && session.isOpen()) {
             if (!session.equals(excludeSession)) {
                 session.getRemote().sendString(msg);
             }
