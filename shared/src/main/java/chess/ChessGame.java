@@ -16,6 +16,7 @@ public class ChessGame {
     private ChessBoard board;
     private ChessPosition blackKingPos;
     private ChessPosition whiteKingPos;
+    private boolean gameOver = false;
 
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
@@ -40,6 +41,14 @@ public class ChessGame {
      */
     public void setTeamTurn(TeamColor team) {
         teamTurn = team;
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public void gameOver() {
+        gameOver = false;
     }
 
     /**

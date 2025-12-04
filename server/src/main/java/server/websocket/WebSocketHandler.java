@@ -139,8 +139,20 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         session.getRemote().sendString(errorMessageJson);
     }
 
-    private void resign(ResignCommand resignCommand, Session session) {
+    private void resign(ResignCommand resignCommand, Session session) throws IOException, DataAccessException {
+        GameData gameData = getGameData(resignCommand.getGameID(), session);
+        endGame(gameData);
 
+        ChessGame.TeamColor winColor;
+        if (resignCommand.getColor() == ChessGame.TeamColor.WHITE) {
+            winColor = ChessGame.TeamColor.BLACK;
+        } else {
+            winColor = ChessGame.TeamColor.WHITE;
+        }
+
+        String resignMessage = String.format("%s resigned. %s player wins!", resignCommand.getUsername(), winColor);
+        NotificationMessage notificationMessage = new NotificationMessage(NOTIFICATION, resignMessage);
+        connections.broadcast(null, notificationMessage, resignCommand.getGameID());
     }
 
     private void leave(LeaveCommand leaveCommand, Session session) {
@@ -180,7 +192,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private ChessGame executeMove(GameData gameData, ChessMove move, Session session, ChessGame.TeamColor color) throws InvalidMoveException, IOException, DataAccessException {
         ChessGame game = gameData.game();
         ChessGame.TeamColor colorTurn = game.getTeamTurn();
-        if (colorTurn == null) {
+        if (colorTurn == null || game.isGameOver()) {
             throw new InvalidMoveException("Game is over");
         }
 
@@ -236,7 +248,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void endGame(GameData gameData) throws DataAccessException {
         ChessGame game = gameData.game();
         game.setTeamTurn(null);
-        GameData newGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
-        gameDAO.deleteThenAddGame(newGameData);
+        game.gameOver();
+        String gameJson = new Gson().toJson(game);
+        gameDAO.updateMove(gameJson, gameData.gameID());
     }
 }
