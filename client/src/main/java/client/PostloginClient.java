@@ -142,7 +142,7 @@ public class PostloginClient {
         if (gameData == null) {
             return;
         }
-        enterGameplay(auth, gameData, WHITE);
+        enterGameplay(auth, gameData, null);
     }
 
     static boolean isNumeric(String s) {

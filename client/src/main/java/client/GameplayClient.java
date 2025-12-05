@@ -19,27 +19,54 @@ public class GameplayClient {
     private String curBackColor = "Black";
     private final ServerFacade server;
 
+    private final String help =
+            """
+            Enter a number for what you would like to do!
+            
+            1: Help
+            2: Redraw Chess Board
+            3: Leave Game
+            4: Make Move
+            5: Resign
+            6: Highlight Legal Moves
+            
+            """;
+
     public GameplayClient(ServerFacade server) {
         this.server = server;
     }
 
     public void run(String auth, GameData gameData, ChessGame.TeamColor color) {
-        System.out.println("Running Gameplay");
         printGame(gameData.game().getBoard(), color);
-
-        System.out.println("Enter \"q\" to exit");
         Scanner scanner = new Scanner(System.in);
-        String input = scanner.nextLine();
-        if (input.equals("q") || input.equals("Q")) {
-            exitGame();
-        } else {
-            printGame(gameData.game().getBoard(), color);
+        String line = "";
+
+        while (!line.equals("3")) {
+            System.out.print(help);
+            line = scanner.nextLine();
+            eval(line, scanner, auth, gameData, color);
         }
+    }
+
+    private void eval(String input, Scanner scanner, String auth, GameData gameData, ChessGame.TeamColor color) {
+        switch (input) {
+            case "1" -> System.out.print(help);
+            case "2" -> printGame(gameData.game().getBoard(), color);
+            case "3" -> leave(auth, color, gameData);
+//            case "4" -> makeMove(scanner, auth, gameData, color);
+//            case "5" -> resign(auth, gameData, color);
+//            case "6" -> highlightLegalMoves(scanner, gameData.game());
+            default -> System.out.print("\nInvalid input - Please Enter a number 1-6\n\n");
+        }
+    }
+
+    private void leave(String auth, ChessGame.TeamColor color, GameData gameData) {
+
     }
 
     private void printGame(ChessBoard board, ChessGame.TeamColor color) {
         System.out.println();
-        if (color.equals(ChessGame.TeamColor.WHITE)) {
+        if (color == null || color.equals(ChessGame.TeamColor.WHITE)) {
             printGameWhite(board);
         } else if (color.equals(ChessGame.TeamColor.BLACK)) {
             printGameBlack(board);
