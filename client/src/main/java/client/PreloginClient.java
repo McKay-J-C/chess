@@ -14,6 +14,7 @@ import static ui.EscapeSequences.*;
 public class PreloginClient {
 
     private final ServerFacade server;
+    private final String serverUrl;
     private final String help =
             """
             Enter a number for what you would like to do!
@@ -26,6 +27,7 @@ public class PreloginClient {
             """;
 
     public PreloginClient(String serverUrl) {
+        this.serverUrl = serverUrl;
         server = new ServerFacade(serverUrl);
     }
 
@@ -115,8 +117,8 @@ public class PreloginClient {
         return email;
     }
 
-    private void enterLogin(String authToken) {
-        PostloginClient postloginClient = new PostloginClient(server);
+    private void enterLogin(String authToken, String serverUrl) {
+        PostloginClient postloginClient = new PostloginClient(server, serverUrl);
         postloginClient.run(authToken);
     }
 

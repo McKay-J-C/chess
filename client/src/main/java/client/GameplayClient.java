@@ -5,8 +5,10 @@ import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import model.GameData;
+import server.ResponseException;
 import server.ServerFacade;
 
+import javax.management.Notification;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
@@ -14,10 +16,17 @@ import static ui.EscapeSequences.BLACK_KING;
 import static ui.EscapeSequences.BLACK_KNIGHT;
 import static ui.EscapeSequences.BLACK_PAWN;
 
-public class GameplayClient {
+public class GameplayClient implements NotificationHandler {
 
     private String curBackColor = "Black";
+    private String authToken;
+    private final WebSocketFacade webSocket;
     private final ServerFacade server;
+
+    public GameplayClient(ServerFacade server, String serverUrl) throws ResponseException {
+        this.server = server;
+        this.webSocket = new WebSocketFacade(serverUrl, this);
+    }
 
     private final String help =
             """
@@ -31,10 +40,6 @@ public class GameplayClient {
             6: Highlight Legal Moves
             
             """;
-
-    public GameplayClient(ServerFacade server) {
-        this.server = server;
-    }
 
     public void run(String auth, GameData gameData, ChessGame.TeamColor color) {
         printGame(gameData.game().getBoard(), color);
@@ -151,4 +156,8 @@ public class GameplayClient {
         System.out.println("Hope you had fun!");
     }
 
+    @Override
+    public void notify(Notification notification) {
+        System.out.println(notification.getMessage() + "\n");
+    }
 }

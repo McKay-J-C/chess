@@ -19,6 +19,7 @@ public class PostloginClient {
 
     private HashMap<Integer, GameData> gameMap = new HashMap<>();
     private final ServerFacade server;
+    private final String serverUrl;
 
     private final String help =
             """
@@ -33,7 +34,8 @@ public class PostloginClient {
             
             """;
 
-    public PostloginClient(ServerFacade server) {
+    public PostloginClient(ServerFacade server, String serverUrl) {
+        this.serverUrl = serverUrl;
         this.server = server;
     }
 
@@ -155,7 +157,7 @@ public class PostloginClient {
     }
 
     private void enterGameplay(String authToken, GameData gameData, ChessGame.TeamColor color) {
-        GameplayClient gameplayClient = new GameplayClient(server);
+        GameplayClient gameplayClient = new GameplayClient(server, serverUrl);
         gameplayClient.run(authToken, gameData, color);
     }
 
