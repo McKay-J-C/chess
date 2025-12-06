@@ -1,9 +1,6 @@
 package client;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 import model.GameData;
 import server.ResponseException;
 import server.ServerFacade;
@@ -18,10 +15,10 @@ import static ui.EscapeSequences.BLACK_PAWN;
 
 public class GameplayClient implements NotificationHandler {
 
-    private String curBackColor = "Black";
-    private String authToken;
+    static String curBackColor = "Black";
     private final WebSocketFacade webSocket;
     private final ServerFacade server;
+    private GameData gameData;
 
     public GameplayClient(ServerFacade server, String serverUrl) throws ResponseException {
         this.server = server;
@@ -41,10 +38,13 @@ public class GameplayClient implements NotificationHandler {
             
             """;
 
-    public void run(String auth, GameData gameData, ChessGame.TeamColor color) {
-        webSocket.connect(auth, gameData.gameID(), color);
+    public void run(String auth, GameData gameData, ChessGame.TeamColor color, boolean needConnect) {
+        if (needConnect) {
+            webSocket.connect(auth, gameData.gameID(), color);
+        }
+        this.gameData = gameData;
 
-        printGame(gameData.game().getBoard(), color);
+//        printGame(gameData.game().getBoard(), color);
         Scanner scanner = new Scanner(System.in);
         String line = "";
 
@@ -68,9 +68,17 @@ public class GameplayClient implements NotificationHandler {
     }
 
     private void makeMove(Scanner scanner, String auth, ChessGame.TeamColor color, GameData gameData) {
-        System.out.println("What piece would you like to move? Enter");
+        ChessPosition startPos = getPos(scanner, "\nWhat piece would you like to move?");
+        if (startPos == null) {
+            return;
+        }
 
-//        webSocket.makeMove(auth, gameData.gameID(), color, move);
+        ChessPosition endPos = getPos(scanner, "\nWhere would you like to move the piece?");
+        if (endPos == null) {
+            return;
+        }
+
+        webSocket.makeMove(auth, gameData.gameID(), color, new ChessMove(startPos, endPos));
     }
 
     private void leave(String auth, ChessGame.TeamColor color, GameData gameData) {
@@ -78,7 +86,41 @@ public class GameplayClient implements NotificationHandler {
         webSocket.leave(auth, gameData.gameID(), color);
     }
 
-    private void printGame(ChessBoard board, ChessGame.TeamColor color) {
+    private ChessPosition getPos(Scanner scanner, String question) {
+        System.out.println(question + "\nEnter row number: ");
+        String row = scanner.nextLine();
+        if (checkQuit(row)) {
+            return null;
+        }
+        if (!isValid(row)) {
+            System.out.println("\nPlease enter a number 1-8\n");
+            return getPos(scanner, question);
+        }
+        int intRow = Integer.parseInt(row);
+
+        System.out.println("\nEnter column number: ");
+        String col = scanner.nextLine();
+        if (checkQuit(col)) {
+            return null;
+        }
+        if (!isValid(col)) {
+            System.out.println("\nPlease enter a number 1-8\n");
+            return getPos(scanner, question);
+        }
+        int intCol = Integer.parseInt(col);
+
+        return new ChessPosition(intRow, intCol);
+    }
+
+    private boolean checkQuit(String num) {
+        return num.equals("q") || num.equals("Q");
+    }
+
+    private boolean isValid(String num) {
+        return num.equals("1") || num.equals("2") || num.equals("3") || num.equals("4") || num.equals("5") || num.equals("6") || num.equals("7") || num.equals("8");
+    }
+
+    static void printGame(ChessBoard board, ChessGame.TeamColor color) {
         System.out.println();
         if (color == null || color.equals(ChessGame.TeamColor.WHITE)) {
             printGameWhite(board);
@@ -93,7 +135,7 @@ public class GameplayClient implements NotificationHandler {
         System.out.println();
     }
 
-    private void printGameWhite(ChessBoard board) {
+    static void printGameWhite(ChessBoard board) {
         System.out.print(SET_BG_COLOR_BLACK);
         System.out.println();
         for (int i=8; i > 0; i--) {
@@ -112,7 +154,7 @@ public class GameplayClient implements NotificationHandler {
         System.out.println();
     }
 
-    private void printGameBlack(ChessBoard board) {
+    static void printGameBlack(ChessBoard board) {
         System.out.print(SET_BG_COLOR_BLACK);
         System.out.println();
         for (int i=1; i < 9; i++) {
@@ -131,7 +173,7 @@ public class GameplayClient implements NotificationHandler {
         System.out.println();
     }
 
-    private void checkNewRow(int j, int switchNum) {
+    static void checkNewRow(int j, int switchNum) {
         if (j == switchNum) {
             switchBackColor();
             System.out.print(SET_BG_COLOR_BLACK);
@@ -139,7 +181,7 @@ public class GameplayClient implements NotificationHandler {
         }
     }
 
-    private void printNextPiece(int i, int j, ChessBoard board) {
+    static void printNextPiece(int i, int j, ChessBoard board) {
         switchBackColor();
         ChessPosition pos = new ChessPosition(i, j);
         ChessPiece piece = board.getPiece(pos);
@@ -150,7 +192,7 @@ public class GameplayClient implements NotificationHandler {
         }
     }
 
-    public String getSymbol(ChessPiece piece) {
+    static String getSymbol(ChessPiece piece) {
         return switch (piece.getPieceType()) {
             case ROOK -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_ROOK : BLACK_ROOK;
             case KNIGHT -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_KNIGHT : BLACK_KNIGHT;
@@ -161,7 +203,7 @@ public class GameplayClient implements NotificationHandler {
         };
     }
 
-    private void printPiece(ChessPiece piece) {
+    static void printPiece(ChessPiece piece) {
         if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
             System.out.print(SET_TEXT_COLOR_WHITE);
         } else {
@@ -170,7 +212,7 @@ public class GameplayClient implements NotificationHandler {
         System.out.print(getSymbol(piece));
     }
 
-    private void switchBackColor() {
+    static void switchBackColor() {
         if (curBackColor.equals("White")) {
             System.out.print(SET_BG_COLOR_MEDIUM_GREY);
             curBackColor = "Black";

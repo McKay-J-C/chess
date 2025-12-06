@@ -78,6 +78,21 @@ public class ConnectionManager {
         }
     }
 
+//    public void broadcastLoadGame(Session excludeSession, ServerMessage serverMessage, int gameID) throws IOException {
+//        String msg = new Gson().toJson(serverMessage);
+//        GameConnections gameConnections = connections.get(gameID);
+//
+//        Session whitePlayer = gameConnections.getWhitePlayer();
+//        sendSessionMessage(whitePlayer, excludeSession, msg);
+//
+//        Session blackPlayer = gameConnections.getBlackPlayer();
+//        sendSessionMessage(blackPlayer, excludeSession, msg);
+//
+//        for (Session c : gameConnections.getObservers()) {
+//            sendSessionMessage(c, excludeSession, msg);
+//        }
+//    }
+
     private void sendSessionMessage(Session session, Session excludeSession, String msg) throws IOException {
 
         if (session != null && session.isOpen()) {

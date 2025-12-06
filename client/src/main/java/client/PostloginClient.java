@@ -161,7 +161,7 @@ public class PostloginClient {
 
     private void enterGameplay(String authToken, GameData gameData, ChessGame.TeamColor color) {
         GameplayClient gameplayClient = new GameplayClient(server, serverUrl);
-        gameplayClient.run(authToken, gameData, color);
+        gameplayClient.run(authToken, gameData, color, true);
     }
 
     private GameData joinGame(Scanner scanner, String auth) {

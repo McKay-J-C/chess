@@ -125,7 +125,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(session, notificationMessage, gameID);
 
-        LoadGameMessage loadGameMessage = new LoadGameMessage(LOAD_GAME, game);
+        LoadGameMessage loadGameMessage = new LoadGameMessage(LOAD_GAME, game, null);
         String loadGameMessageJson = new Gson().toJson(loadGameMessage);
         session.getRemote().sendString(loadGameMessageJson);
     }
@@ -201,7 +201,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         String gameJson = new Gson().toJson(newGameData.game());
         gameDAO.updateMove(gameJson, gameID);
 
-        LoadGameMessage loadGameMessage = new LoadGameMessage(LOAD_GAME, game);
+        LoadGameMessage loadGameMessage = new LoadGameMessage(LOAD_GAME, game, null);
         connections.broadcast(null, loadGameMessage, gameID);
 
         String moveMessage = String.format("%s made move: %s", makeMoveCommand.getUsername(), move);

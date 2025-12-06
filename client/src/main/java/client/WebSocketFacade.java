@@ -4,6 +4,7 @@ import chess.ChessGame;
 import chess.ChessMove;
 import com.google.gson.Gson;
 import jakarta.websocket.*;
+import model.GameData;
 import server.ResponseException;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
@@ -29,13 +30,13 @@ public class WebSocketFacade extends Endpoint {
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
-//            this.session.addMessageHandler(new MessageHandler.Whole<String>() {
-//                @Override
-//                public void onMessage(String message) {
-//                    Notification notification = new Gson().fromJson(message, Notification.class);
-//                    notificationHandler.notify(notification);
-//                }
-//            });
+            this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+                @Override
+                public void onMessage(String message) {
+                    Notification notification = new Gson().fromJson(message, Notification.class);
+                    notificationHandler.notify(notification);
+                }
+            });
         } catch (Exception ex){
             throw new ResponseException(ex.getMessage());
         }
@@ -44,12 +45,12 @@ public class WebSocketFacade extends Endpoint {
     //Don't need to do anything with this
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
-        this.session = session;
-        session.addMessageHandler((MessageHandler.Whole<String>) message -> {
-            Notification notification = new Gson().fromJson(message, Notification.class);
-            notificationHandler.notify(notification);
-        });
-        System.out.println("WS OPEN: " + session.getId());
+//        this.session = session;
+//        session.addMessageHandler((MessageHandler.Whole<String>) message -> {
+//            Notification notification = new Gson().fromJson(message, Notification.class);
+//            notificationHandler.notify(notification);
+//        });
+//        System.out.println("WS OPEN: " + session.getId());
     }
 
     public void connect(String authToken, int gameID, ChessGame.TeamColor color) {
