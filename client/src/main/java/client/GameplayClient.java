@@ -87,12 +87,15 @@ public class GameplayClient implements NotificationHandler {
         } else {
             throw new RuntimeException("Invalid color");
         }
+
         System.out.print(RESET_TEXT_COLOR);
         System.out.print(RESET_BG_COLOR);
         System.out.println();
     }
 
     private void printGameWhite(ChessBoard board) {
+        System.out.print(SET_BG_COLOR_BLACK);
+        System.out.println();
         for (int i=8; i > 0; i--) {
             System.out.print(SET_TEXT_COLOR_LIGHT_GREY);
             System.out.print("  " + i + "  ");
@@ -102,12 +105,16 @@ public class GameplayClient implements NotificationHandler {
             }
         }
         System.out.print(SET_TEXT_COLOR_LIGHT_GREY);
-        for (int k = 0; k < 9; k++) {
-            System.out.print(k);
+        System.out.print("     ");
+        for (int k = 1; k < 9; k++) {
+            System.out.print(" " + k + " ");
         }
+        System.out.println();
     }
 
     private void printGameBlack(ChessBoard board) {
+        System.out.print(SET_BG_COLOR_BLACK);
+        System.out.println();
         for (int i=1; i < 9; i++) {
             System.out.print(SET_TEXT_COLOR_LIGHT_GREY);
             System.out.print("  " + i + "  ");
@@ -117,9 +124,11 @@ public class GameplayClient implements NotificationHandler {
             }
         }
         System.out.print(SET_TEXT_COLOR_LIGHT_GREY);
+        System.out.print("     ");
         for (int k = 8; k > 0; k--) {
-            System.out.print(k);
+            System.out.print(" " + k + " ");
         }
+        System.out.println();
     }
 
     private void checkNewRow(int j, int switchNum) {
