@@ -60,15 +60,21 @@ public class GameplayClient implements NotificationHandler {
             case "1" -> System.out.print(help);
             case "2" -> printGame(gameData.game().getBoard(), color);
             case "3" -> leave(auth, color, gameData);
-//            case "4" -> makeMove(scanner, auth, gameData, color);
+            case "4" -> makeMove(scanner, auth, color, gameData);
 //            case "5" -> resign(auth, gameData, color);
 //            case "6" -> highlightLegalMoves(scanner, gameData.game());
             default -> System.out.print("\nInvalid input - Please Enter a number 1-6\n\n");
         }
     }
 
+    private void makeMove(Scanner scanner, String auth, ChessGame.TeamColor color, GameData gameData) {
+        System.out.println("What piece would you like to move? Enter");
+
+//        webSocket.makeMove(auth, gameData.gameID(), color, move);
+    }
+
     private void leave(String auth, ChessGame.TeamColor color, GameData gameData) {
-        System.out.println("Goodbye!");
+        exitGame();
         webSocket.leave(auth, gameData.gameID(), color);
     }
 
@@ -88,19 +94,31 @@ public class GameplayClient implements NotificationHandler {
 
     private void printGameWhite(ChessBoard board) {
         for (int i=8; i > 0; i--) {
+            System.out.print(SET_TEXT_COLOR_LIGHT_GREY);
+            System.out.print("  " + i + "  ");
             for (int j=1; j < 9; j++) {
                 printNextPiece(i, j, board);
                 checkNewRow(j, 8);
             }
         }
+        System.out.print(SET_TEXT_COLOR_LIGHT_GREY);
+        for (int k = 0; k < 9; k++) {
+            System.out.print(k);
+        }
     }
 
     private void printGameBlack(ChessBoard board) {
         for (int i=1; i < 9; i++) {
+            System.out.print(SET_TEXT_COLOR_LIGHT_GREY);
+            System.out.print("  " + i + "  ");
             for (int j=8; j > 0; j--) {
                 printNextPiece(i, j, board);
                 checkNewRow(j, 1);
             }
+        }
+        System.out.print(SET_TEXT_COLOR_LIGHT_GREY);
+        for (int k = 8; k > 0; k--) {
+            System.out.print(k);
         }
     }
 
