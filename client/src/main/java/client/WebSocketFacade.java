@@ -21,19 +21,21 @@ public class WebSocketFacade extends Endpoint {
 
     public WebSocketFacade(String url, NotificationHandler notificationHandler) {
         try {
-            url = url.replace("http", "ws");
+            System.out.println("Original url: " + url);
+            url = "ws://localhost:" + url;
+            System.out.println("New url: " + url);
             URI socketURI = new URI(url + "/ws");
             this.notificationHandler = notificationHandler;
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
-            this.session.addMessageHandler(new MessageHandler.Whole<String>() {
-                @Override
-                public void onMessage(String message) {
-                    Notification notification = new Gson().fromJson(message, Notification.class);
-                    notificationHandler.notify(notification);
-                }
-            });
+//            this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+//                @Override
+//                public void onMessage(String message) {
+//                    Notification notification = new Gson().fromJson(message, Notification.class);
+//                    notificationHandler.notify(notification);
+//                }
+//            });
         } catch (Exception ex){
             throw new ResponseException(ex.getMessage());
         }
@@ -42,6 +44,12 @@ public class WebSocketFacade extends Endpoint {
     //Don't need to do anything with this
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
+        this.session = session;
+        session.addMessageHandler((MessageHandler.Whole<String>) message -> {
+            Notification notification = new Gson().fromJson(message, Notification.class);
+            notificationHandler.notify(notification);
+        });
+        System.out.println("WS OPEN: " + session.getId());
     }
 
     public void connect(String authToken, int gameID, ChessGame.TeamColor color) {
@@ -50,7 +58,7 @@ public class WebSocketFacade extends Endpoint {
 
     public void makeMove(String authToken, int gameID, ChessGame.TeamColor color, ChessMove move) {
         try {
-            UserGameCommand userGameCommand = new MakeMoveCommand(CommandType.CONNECT, authToken, gameID, move, color);
+            UserGameCommand userGameCommand = new MakeMoveCommand(CommandType.MAKE_MOVE, authToken, gameID, move, color);
             this.session.getBasicRemote().sendText(new Gson().toJson(userGameCommand));
         } catch (IOException ex) {
             throw new ResponseException(ex.getMessage());
@@ -68,7 +76,11 @@ public class WebSocketFacade extends Endpoint {
     private void sendCommand(CommandType type, String authToken, int gameID, ChessGame.TeamColor color) {
         try {
             UserGameCommand userGameCommand = new UserGameCommand(type, authToken, gameID, color);
-            this.session.getBasicRemote().sendText(new Gson().toJson(userGameCommand));
+            System.out.println("session = " + session);
+            System.out.println("session.isOpen() = " + session.isOpen());
+            String commandJson = new Gson().toJson(userGameCommand);
+            System.out.println("JSON OUT: " + commandJson);
+            this.session.getBasicRemote().sendText(commandJson);
         } catch (IOException ex) {
             throw new ResponseException(ex.getMessage());
         }

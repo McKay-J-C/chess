@@ -86,6 +86,9 @@ public class PostloginClient {
         System.out.println("Current Games: \n");
         try {
             HashSet<GameData> games = server.listGames(new ListGamesRequest(auth), auth).games();
+            if (games.isEmpty()) {
+                System.out.println("No current games\n");
+            }
             int gameNum = 1;
             gameMap.clear();
             for (GameData game : games) {

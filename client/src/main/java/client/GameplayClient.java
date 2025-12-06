@@ -42,6 +42,8 @@ public class GameplayClient implements NotificationHandler {
             """;
 
     public void run(String auth, GameData gameData, ChessGame.TeamColor color) {
+        webSocket.connect(auth, gameData.gameID(), color);
+
         printGame(gameData.game().getBoard(), color);
         Scanner scanner = new Scanner(System.in);
         String line = "";
@@ -66,7 +68,8 @@ public class GameplayClient implements NotificationHandler {
     }
 
     private void leave(String auth, ChessGame.TeamColor color, GameData gameData) {
-
+        System.out.println("Goodbye!");
+        webSocket.leave(auth, gameData.gameID(), color);
     }
 
     private void printGame(ChessBoard board, ChessGame.TeamColor color) {

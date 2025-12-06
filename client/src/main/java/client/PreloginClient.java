@@ -60,7 +60,7 @@ public class PreloginClient {
 
         try {
             LoginResponse loginResponse = server.login(new LoginRequest(username, password));
-            enterLogin(loginResponse.authToken());
+            enterLogin(loginResponse.authToken(), serverUrl);
         } catch (ResponseException ex) {
             handleError(ex, "Username");
             login(scanner);
@@ -80,7 +80,7 @@ public class PreloginClient {
 
         try {
             RegisterResponse registerResponse = server.register(new RegisterRequest(username, password, email));
-            enterLogin(registerResponse.authToken());
+            enterLogin(registerResponse.authToken(), serverUrl);
         } catch (Exception ex) {
             handleError(ex, "Username");
         }

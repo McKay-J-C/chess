@@ -33,10 +33,10 @@ public record GameData(
         String whiteName = whiteUsername;
         String blackName = blackUsername;
         if (whiteName == null) {
-            whiteName = "Available";
+            whiteName = "<available>";
         }
         if (blackName == null) {
-            blackName = "Available";
+            blackName = "<available>";
         }
 
         return gameName + "\nWhite Player: " + whiteName

@@ -31,17 +31,20 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     @Override
     public void handleConnect(@NotNull WsConnectContext ctx) throws Exception {
-        System.out.println("Websocket connected");
+        System.out.println("Websocket connected! session = " + ctx.session);
         ctx.enableAutomaticPings();
     }
 
     @Override
     public void handleMessage(@NotNull WsMessageContext ctx) throws Exception {
+        System.out.println("Entering handle message");
         try {
             UserGameCommand userGameCommand = new Gson().fromJson(ctx.message(), UserGameCommand.class);
             Session session = ctx.session;
+            System.out.println("SERVER RECEIVED: " + ctx.message());
 
             String username = authorizeUser(userGameCommand.getAuthToken(), session);
+            System.out.println("Parsed username = " + username);
             if (username == null) {
                 return;
             }
@@ -62,6 +65,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 case LEAVE -> {
                     LeaveCommand leaveCommand = new LeaveCommand(UserGameCommand.CommandType.LEAVE,
                             userGameCommand.getAuthToken(), userGameCommand.getGameID(), username, color);
+                    System.out.println("RECEIVED LEAVE COMMAND: " + leaveCommand);
                     leave(leaveCommand, session, color);
                 }
                 case MAKE_MOVE -> {
