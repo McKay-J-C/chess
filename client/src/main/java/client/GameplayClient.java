@@ -9,6 +9,8 @@ import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
+
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
@@ -30,15 +32,13 @@ public class GameplayClient implements NotificationHandler {
 
     private final String help =
             """
-            Enter a number for what you would like to do!
-            
+            Options:
             1: Help
             2: Redraw Chess Board
             3: Leave Game
             4: Make Move
             5: Resign
             6: Highlight Legal Moves
-            
             """;
 
     public void run(String auth, GameData gameData, ChessGame.TeamColor color, boolean needConnect) {
@@ -61,13 +61,31 @@ public class GameplayClient implements NotificationHandler {
     private void eval(String input, Scanner scanner, String auth, GameData gameData, ChessGame.TeamColor color) {
         switch (input) {
             case "1" -> System.out.print(help);
-            case "2" -> printGame(gameData.game().getBoard(), color);
+            case "2" -> printGame(gameData.game().getBoard(), color, new ArrayList<>());
             case "3" -> leave(auth, color, gameData.gameID());
             case "4" -> makeMove(scanner, auth, color, gameData.gameID());
             case "5" -> resign(scanner, auth, gameData.gameID(), color);
-//            case "6" -> highlightLegalMoves(scanner, gameData.game());
+            case "6" -> highlightLegalMoves(scanner, gameData.game(), color);
             default -> System.out.print("\nInvalid input - Please Enter a number 1-6\n\n");
         }
+    }
+
+    private void highlightLegalMoves(Scanner scanner, ChessGame game, ChessGame.TeamColor color) {
+        ChessPosition pos = getPos(scanner, "\nWhat piece would you like to highlight moves for?");
+        if (pos == null) {
+            return;
+        }
+        if (game.getBoard().getPiece(pos) == null) {
+            System.out.println("No piece at this position\n");
+            return;
+        }
+        ArrayList<ChessMove> validMoves = game.validMoves(pos);
+        ArrayList<ChessPosition> highlightPositions = new ArrayList<>();
+        highlightPositions.add(pos);
+        for (ChessMove move : validMoves) {
+            highlightPositions.add(move.getEndPosition());
+        }
+        printGame(game.getBoard(), color, highlightPositions);
     }
 
     private void resign(Scanner scanner, String auth, int gameID, ChessGame.TeamColor color) {
@@ -131,12 +149,12 @@ public class GameplayClient implements NotificationHandler {
         return num.equals("1") || num.equals("2") || num.equals("3") || num.equals("4") || num.equals("5") || num.equals("6") || num.equals("7") || num.equals("8");
     }
 
-    static void printGame(ChessBoard board, ChessGame.TeamColor color) {
+    static void printGame(ChessBoard board, ChessGame.TeamColor color, ArrayList<ChessPosition> highlightPositions) {
         System.out.println();
         if (color == null || color.equals(ChessGame.TeamColor.WHITE)) {
-            printGameWhite(board);
+            printGameWhite(board, highlightPositions);
         } else if (color.equals(ChessGame.TeamColor.BLACK)) {
-            printGameBlack(board);
+            printGameBlack(board, highlightPositions);
         } else {
             throw new RuntimeException("Invalid color");
         }
@@ -146,14 +164,16 @@ public class GameplayClient implements NotificationHandler {
         System.out.println();
     }
 
-    static void printGameWhite(ChessBoard board) {
+    static void printGameWhite(ChessBoard board, ArrayList<ChessPosition> highlightPositions) {
         System.out.print(SET_BG_COLOR_BLACK);
         System.out.println();
         for (int i=8; i > 0; i--) {
             System.out.print(SET_TEXT_COLOR_LIGHT_GREY);
             System.out.print("  " + i + "  ");
             for (int j=1; j < 9; j++) {
-                printNextPiece(i, j, board);
+                ChessPosition curPos = new ChessPosition(i, j);
+                boolean highlighted = (highlightPositions.contains(curPos));
+                printNextPiece(i, j, board, highlighted);
                 checkNewRow(j, 8);
             }
         }
@@ -165,14 +185,16 @@ public class GameplayClient implements NotificationHandler {
         System.out.println();
     }
 
-    static void printGameBlack(ChessBoard board) {
+    static void printGameBlack(ChessBoard board, ArrayList<ChessPosition> highlightPositions) {
         System.out.print(SET_BG_COLOR_BLACK);
         System.out.println();
         for (int i=1; i < 9; i++) {
             System.out.print(SET_TEXT_COLOR_LIGHT_GREY);
             System.out.print("  " + i + "  ");
             for (int j=8; j > 0; j--) {
-                printNextPiece(i, j, board);
+                ChessPosition curPos = new ChessPosition(i, j);
+                boolean highlighted = (highlightPositions.contains(curPos));
+                printNextPiece(i, j, board, highlighted);
                 checkNewRow(j, 1);
             }
         }
@@ -186,14 +208,14 @@ public class GameplayClient implements NotificationHandler {
 
     static void checkNewRow(int j, int switchNum) {
         if (j == switchNum) {
-            switchBackColor();
+            switchBackColor(false);
             System.out.print(SET_BG_COLOR_BLACK);
             System.out.print("\n");
         }
     }
 
-    static void printNextPiece(int i, int j, ChessBoard board) {
-        switchBackColor();
+    static void printNextPiece(int i, int j, ChessBoard board, boolean highlighted) {
+        switchBackColor(highlighted);
         ChessPosition pos = new ChessPosition(i, j);
         ChessPiece piece = board.getPiece(pos);
         if (piece == null) {
@@ -223,12 +245,18 @@ public class GameplayClient implements NotificationHandler {
         System.out.print(getSymbol(piece));
     }
 
-    static void switchBackColor() {
+    static void switchBackColor(boolean highlighted) {
         if (curBackColor.equals("White")) {
             System.out.print(SET_BG_COLOR_MEDIUM_GREY);
+            if (highlighted) {
+                System.out.print(SET_BG_COLOR_DARK_GREEN);
+            }
             curBackColor = "Black";
         } else if (curBackColor.equals("Black")) {
             System.out.print(SET_BG_COLOR_EXTRA_LIGHT_GREY);
+            if (highlighted) {
+                System.out.print(SET_BG_COLOR_GREEN);
+            }
             curBackColor = "White";
         } else {
             throw new RuntimeException("Bad Background Color");
@@ -269,6 +297,6 @@ public class GameplayClient implements NotificationHandler {
     }
 
     private void handleLoadGameMessage(LoadGameMessage loadGameMessage) {
-        printGame(loadGameMessage.getGame().getBoard(), loadGameMessage.getColor());
+        printGame(loadGameMessage.getGame().getBoard(), loadGameMessage.getColor(), new ArrayList<>());
     }
 }
