@@ -1,9 +1,14 @@
 package client;
 
 import chess.*;
+import com.google.gson.Gson;
 import model.GameData;
 import server.ResponseException;
 import server.ServerFacade;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import javax.management.Notification;
 import java.util.Scanner;
@@ -98,7 +103,7 @@ public class GameplayClient implements NotificationHandler {
         }
         int intRow = Integer.parseInt(row);
 
-        System.out.println("\nEnter column number: ");
+        System.out.println("Enter column number: ");
         String col = scanner.nextLine();
         if (checkQuit(col)) {
             return null;
@@ -229,7 +234,26 @@ public class GameplayClient implements NotificationHandler {
     }
 
     @Override
-    public void notify(Notification notification) {
-        System.out.println(notification.getMessage() + "\n");
+    public void notify(ServerMessage serverMessage, String message) {
+//        System.out.println("Attempting to handle message");
+        switch (serverMessage.getServerMessageType()) {
+            case ERROR -> handleErrorMessage(new Gson().fromJson(message, ErrorMessage.class));
+            case LOAD_GAME -> handleLoadGameMessage(new Gson().fromJson(message, LoadGameMessage.class));
+            case NOTIFICATION -> handleNotificationMessage(new Gson().fromJson(message, NotificationMessage.class));
+            default -> throw new RuntimeException("Unknown Server Message");
+        }
+        System.out.println("\nEnter a number for what you would like to do! (Enter 1 for help)\n");
+    }
+
+    private void handleErrorMessage(ErrorMessage errorMessage) {
+        System.out.println(errorMessage.getErrorMessage());
+    }
+
+    private void handleNotificationMessage(NotificationMessage notificationMessage) {
+        System.out.println(notificationMessage.getMessage());
+    }
+
+    private void handleLoadGameMessage(LoadGameMessage loadGameMessage) {
+        printGame(loadGameMessage.getGame().getBoard(), loadGameMessage.getColor());
     }
 }

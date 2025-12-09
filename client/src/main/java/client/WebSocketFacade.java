@@ -9,9 +9,8 @@ import server.ResponseException;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.commands.UserGameCommand.CommandType;
-
+import websocket.messages.*;
 import javax.imageio.IIOException;
-import javax.management.Notification;
 import java.io.IOException;
 import java.net.URI;
 
@@ -33,8 +32,8 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    Notification notification = new Gson().fromJson(message, Notification.class);
-                    notificationHandler.notify(notification);
+                    ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+                    notificationHandler.notify(serverMessage, message);
                 }
             });
         } catch (Exception ex){
