@@ -67,31 +67,44 @@ public class ConnectionManager {
         String msg = new Gson().toJson(serverMessage);
         GameConnections gameConnections = connections.get(gameID);
 
+        sendWhiteMessage(gameConnections, excludeSession, msg);
+        sendBlackMessage(gameConnections, excludeSession, msg);
+        sendObserverMessages(gameConnections, excludeSession, msg);
+    }
+
+    public void broadcastLoadGame(LoadGameMessage loadGameMessage, int gameID) throws IOException {
+        GameConnections gameConnections = connections.get(gameID);
+
+        sendObserverMessages(gameConnections, null, new Gson().toJson(loadGameMessage));
+        sendLoadGame(loadGameMessage, gameConnections, ChessGame.TeamColor.WHITE);
+        sendLoadGame(loadGameMessage, gameConnections, ChessGame.TeamColor.BLACK);
+    }
+
+    private void sendLoadGame(LoadGameMessage loadGameMessage, GameConnections gameConnections, ChessGame.TeamColor color) throws IOException {
+        loadGameMessage = loadGameMessage.setColor(color);
+        String msg = new Gson().toJson(loadGameMessage);
+        if (color == ChessGame.TeamColor.BLACK) {
+            sendBlackMessage(gameConnections, null, msg);
+        } else {
+            sendWhiteMessage(gameConnections, null, msg);
+        }
+    }
+
+    private void sendWhiteMessage(GameConnections gameConnections, Session excludeSession, String msg) throws IOException {
         Session whitePlayer = gameConnections.getWhitePlayer();
         sendSessionMessage(whitePlayer, excludeSession, msg);
+    }
 
+    private void sendBlackMessage(GameConnections gameConnections, Session excludeSession, String msg) throws IOException {
         Session blackPlayer = gameConnections.getBlackPlayer();
         sendSessionMessage(blackPlayer, excludeSession, msg);
+    }
 
+    private void sendObserverMessages(GameConnections gameConnections, Session excludeSession, String msg) throws IOException {
         for (Session c : gameConnections.getObservers()) {
             sendSessionMessage(c, excludeSession, msg);
         }
     }
-
-//    public void broadcastLoadGame(Session excludeSession, ServerMessage serverMessage, int gameID) throws IOException {
-//        String msg = new Gson().toJson(serverMessage);
-//        GameConnections gameConnections = connections.get(gameID);
-//
-//        Session whitePlayer = gameConnections.getWhitePlayer();
-//        sendSessionMessage(whitePlayer, excludeSession, msg);
-//
-//        Session blackPlayer = gameConnections.getBlackPlayer();
-//        sendSessionMessage(blackPlayer, excludeSession, msg);
-//
-//        for (Session c : gameConnections.getObservers()) {
-//            sendSessionMessage(c, excludeSession, msg);
-//        }
-//    }
 
     private void sendSessionMessage(Session session, Session excludeSession, String msg) throws IOException {
 

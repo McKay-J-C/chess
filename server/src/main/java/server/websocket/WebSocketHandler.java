@@ -26,25 +26,25 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     @Override
     public void handleClose(@NotNull WsCloseContext ctx) throws Exception {
-        System.out.println("Websocket closed");
+//        System.out.println("Websocket closed");
     }
 
     @Override
     public void handleConnect(@NotNull WsConnectContext ctx) throws Exception {
-        System.out.println("Websocket connected! session = " + ctx.session);
+//        System.out.println("Websocket connected! session = " + ctx.session);
         ctx.enableAutomaticPings();
     }
 
     @Override
     public void handleMessage(@NotNull WsMessageContext ctx) throws Exception {
-        System.out.println("Entering handle message");
+//        System.out.println("Entering handle message");
         try {
             UserGameCommand userGameCommand = new Gson().fromJson(ctx.message(), UserGameCommand.class);
             Session session = ctx.session;
-            System.out.println("SERVER RECEIVED: " + ctx.message());
+//            System.out.println("SERVER RECEIVED: " + ctx.message());
 
             String username = authorizeUser(userGameCommand.getAuthToken(), session);
-            System.out.println("Parsed username = " + username);
+//            System.out.println("Parsed username = " + username);
             if (username == null) {
                 return;
             }
@@ -65,7 +65,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 case LEAVE -> {
                     LeaveCommand leaveCommand = new LeaveCommand(UserGameCommand.CommandType.LEAVE,
                             userGameCommand.getAuthToken(), userGameCommand.getGameID(), username, color);
-                    System.out.println("RECEIVED LEAVE COMMAND: " + leaveCommand);
+//                    System.out.println("RECEIVED LEAVE COMMAND: " + leaveCommand);
                     leave(leaveCommand, session, color);
                 }
                 case MAKE_MOVE -> {
@@ -125,7 +125,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(session, notificationMessage, gameID);
 
-        LoadGameMessage loadGameMessage = new LoadGameMessage(LOAD_GAME, game, null);
+        LoadGameMessage loadGameMessage = new LoadGameMessage(LOAD_GAME, game, foundColor);
         String loadGameMessageJson = new Gson().toJson(loadGameMessage);
         session.getRemote().sendString(loadGameMessageJson);
     }
@@ -133,9 +133,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private String makeColorString(ChessGame.TeamColor foundColor) {
         String color;
         if (foundColor == null) {
-            color = "";
+            color = "an observer";
         } else {
-            color = "as " + foundColor.name();
+            color = foundColor.name();
         }
         return color;
     }
@@ -202,7 +202,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         gameDAO.updateMove(gameJson, gameID);
 
         LoadGameMessage loadGameMessage = new LoadGameMessage(LOAD_GAME, game, null);
-        connections.broadcast(null, loadGameMessage, gameID);
+        connections.broadcastLoadGame(loadGameMessage, gameID);
 
         String moveMessage = String.format("%s made move: %s", makeMoveCommand.getUsername(), move);
         NotificationMessage notificationMessage = new NotificationMessage(NOTIFICATION, moveMessage);

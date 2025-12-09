@@ -4,13 +4,11 @@ import chess.ChessGame;
 import chess.ChessMove;
 import com.google.gson.Gson;
 import jakarta.websocket.*;
-import model.GameData;
 import server.ResponseException;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.commands.UserGameCommand.CommandType;
 import websocket.messages.*;
-import javax.imageio.IIOException;
 import java.io.IOException;
 import java.net.URI;
 
@@ -21,9 +19,9 @@ public class WebSocketFacade extends Endpoint {
 
     public WebSocketFacade(String url, NotificationHandler notificationHandler) {
         try {
-            System.out.println("Original url: " + url);
+//            System.out.println("Original url: " + url);
             url = "ws://localhost:" + url;
-            System.out.println("New url: " + url);
+//            System.out.println("New url: " + url);
             URI socketURI = new URI(url + "/ws");
             this.notificationHandler = notificationHandler;
 
@@ -44,12 +42,6 @@ public class WebSocketFacade extends Endpoint {
     //Don't need to do anything with this
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
-//        this.session = session;
-//        session.addMessageHandler((MessageHandler.Whole<String>) message -> {
-//            Notification notification = new Gson().fromJson(message, Notification.class);
-//            notificationHandler.notify(notification);
-//        });
-//        System.out.println("WS OPEN: " + session.getId());
     }
 
     public void connect(String authToken, int gameID, ChessGame.TeamColor color) {
@@ -76,10 +68,10 @@ public class WebSocketFacade extends Endpoint {
     private void sendCommand(CommandType type, String authToken, int gameID, ChessGame.TeamColor color) {
         try {
             UserGameCommand userGameCommand = new UserGameCommand(type, authToken, gameID, color);
-            System.out.println("session = " + session);
-            System.out.println("session.isOpen() = " + session.isOpen());
+//            System.out.println("session = " + session);
+//            System.out.println("session.isOpen() = " + session.isOpen());
             String commandJson = new Gson().toJson(userGameCommand);
-            System.out.println("JSON OUT: " + commandJson);
+//            System.out.println("JSON OUT: " + commandJson);
             this.session.getBasicRemote().sendText(commandJson);
         } catch (IOException ex) {
             throw new ResponseException(ex.getMessage());

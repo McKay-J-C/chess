@@ -4,7 +4,6 @@ import chess.*;
 import com.google.gson.Gson;
 import model.GameData;
 import server.ResponseException;
-import server.ServerFacade;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
@@ -22,16 +21,15 @@ public class GameplayClient implements NotificationHandler {
 
     static String curBackColor = "Black";
     private final WebSocketFacade webSocket;
-    private final ServerFacade server;
     private GameData gameData;
 
-    public GameplayClient(ServerFacade server, String serverUrl) throws ResponseException {
-        this.server = server;
+    public GameplayClient(String serverUrl) throws ResponseException {
         this.webSocket = new WebSocketFacade(serverUrl, this);
     }
 
     private final String help =
             """
+            
             Options:
             1: Help
             2: Redraw Chess Board
@@ -47,14 +45,13 @@ public class GameplayClient implements NotificationHandler {
         }
         this.gameData = gameData;
 
-//        printGame(gameData.game().getBoard(), color);
         Scanner scanner = new Scanner(System.in);
         String line = "";
+        System.out.println(help);
 
         while (!line.equals("3")) {
-            System.out.print(help);
             line = scanner.nextLine();
-            eval(line, scanner, auth, gameData, color);
+            eval(line, scanner, auth, this.gameData, color);
         }
     }
 
@@ -66,7 +63,7 @@ public class GameplayClient implements NotificationHandler {
             case "4" -> makeMove(scanner, auth, color, gameData.gameID());
             case "5" -> resign(scanner, auth, gameData.gameID(), color);
             case "6" -> highlightLegalMoves(scanner, gameData.game(), color);
-            default -> System.out.print("\nInvalid input - Please Enter a number 1-6\n\n");
+            default -> System.out.println("\nInvalid input - Please Enter a number 1-6\n");
         }
     }
 
@@ -97,17 +94,44 @@ public class GameplayClient implements NotificationHandler {
     }
 
     private void makeMove(Scanner scanner, String auth, ChessGame.TeamColor color, int gameID) {
-        ChessPosition startPos = getPos(scanner, "\nWhat piece would you like to move?");
+        if (!checkTeamTurn(color)) {
+            return;
+        }
+        ChessPosition startPos = getPos(scanner, "What piece would you like to move? (enter 'q' to quit)");
         if (startPos == null) {
             return;
         }
+        //Bad piece at start location
+        if (!checkStartPiece(startPos, color)) {
+            return;
+        }
 
-        ChessPosition endPos = getPos(scanner, "\nWhere would you like to move the piece?");
+        ChessPosition endPos = getPos(scanner, "Where would you like to move the piece?");
         if (endPos == null) {
             return;
         }
 
         webSocket.makeMove(auth, gameID, color, new ChessMove(startPos, endPos));
+    }
+
+    private boolean checkTeamTurn(ChessGame.TeamColor color) {
+        if (!color.equals(gameData.game().getTeamTurn())) {
+            System.out.println("It's not your turn!");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkStartPiece(ChessPosition pos, ChessGame.TeamColor color) {
+        ChessPiece startPiece = gameData.game().getBoard().getPiece(pos);
+        if (startPiece == null) {
+            System.out.println("No piece at location\n");
+            return false;
+        } else if (startPiece.getTeamColor() != color) {
+            System.out.println("Wrong piece color at location\n");
+            return false;
+        }
+        return true;
     }
 
     private void leave(String auth, ChessGame.TeamColor color, int gameID) {
@@ -149,7 +173,7 @@ public class GameplayClient implements NotificationHandler {
         return num.equals("1") || num.equals("2") || num.equals("3") || num.equals("4") || num.equals("5") || num.equals("6") || num.equals("7") || num.equals("8");
     }
 
-    static void printGame(ChessBoard board, ChessGame.TeamColor color, ArrayList<ChessPosition> highlightPositions) {
+    private void printGame(ChessBoard board, ChessGame.TeamColor color, ArrayList<ChessPosition> highlightPositions) {
         System.out.println();
         if (color == null || color.equals(ChessGame.TeamColor.WHITE)) {
             printGameWhite(board, highlightPositions);
@@ -161,7 +185,8 @@ public class GameplayClient implements NotificationHandler {
 
         System.out.print(RESET_TEXT_COLOR);
         System.out.print(RESET_BG_COLOR);
-        System.out.println();
+        System.out.println(gameData.game().getTeamTurn().toString() + " turn!");
+        System.out.println("Enter a number for what you would like to do (Enter 1 for help)!");
     }
 
     static void printGameWhite(ChessBoard board, ArrayList<ChessPosition> highlightPositions) {
@@ -270,33 +295,33 @@ public class GameplayClient implements NotificationHandler {
     @Override
     public void notify(ServerMessage serverMessage, String message) {
 //        System.out.println("Attempting to handle message");
-        boolean gameOver = false;
         switch (serverMessage.getServerMessageType()) {
             case ERROR -> handleErrorMessage(new Gson().fromJson(message, ErrorMessage.class));
             case LOAD_GAME -> handleLoadGameMessage(new Gson().fromJson(message, LoadGameMessage.class));
-            case NOTIFICATION -> gameOver = handleNotificationMessage(new Gson().fromJson(message, NotificationMessage.class));
+            case NOTIFICATION -> handleNotificationMessage(new Gson().fromJson(message, NotificationMessage.class));
             default -> throw new RuntimeException("Unknown Server Message");
-        }
-        if (!gameOver) {
-            System.out.println("\nEnter a number for what you would like to do! (Enter 1 for help)");
         }
     }
 
     private void handleErrorMessage(ErrorMessage errorMessage) {
         System.out.println(errorMessage.getErrorMessage());
+        System.out.println("Enter a number for what you would like to do! (Enter 1 for help)");
     }
 
-    private boolean handleNotificationMessage(NotificationMessage notificationMessage) {
+    private void handleNotificationMessage(NotificationMessage notificationMessage) {
         String message = notificationMessage.getMessage();
         System.out.println(message);
         if (message.contains("wins") || message.contains("tie")) {
             System.out.println("Enter 3 to exit");
-            return true;
+            return;
         }
-        return false;
+        if (!message.contains("move:")) {
+            System.out.println("Enter a number for what you would like to do! (Enter 1 for help)");
+        }
     }
 
     private void handleLoadGameMessage(LoadGameMessage loadGameMessage) {
+        this.gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), loadGameMessage.getGame());
         printGame(loadGameMessage.getGame().getBoard(), loadGameMessage.getColor(), new ArrayList<>());
     }
 }
