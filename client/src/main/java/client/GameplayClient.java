@@ -9,8 +9,6 @@ import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
-
-import javax.management.Notification;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
@@ -64,15 +62,23 @@ public class GameplayClient implements NotificationHandler {
         switch (input) {
             case "1" -> System.out.print(help);
             case "2" -> printGame(gameData.game().getBoard(), color);
-            case "3" -> leave(auth, color, gameData);
-            case "4" -> makeMove(scanner, auth, color, gameData);
-//            case "5" -> resign(auth, gameData, color);
+            case "3" -> leave(auth, color, gameData.gameID());
+            case "4" -> makeMove(scanner, auth, color, gameData.gameID());
+            case "5" -> resign(scanner, auth, gameData.gameID(), color);
 //            case "6" -> highlightLegalMoves(scanner, gameData.game());
             default -> System.out.print("\nInvalid input - Please Enter a number 1-6\n\n");
         }
     }
 
-    private void makeMove(Scanner scanner, String auth, ChessGame.TeamColor color, GameData gameData) {
+    private void resign(Scanner scanner, String auth, int gameID, ChessGame.TeamColor color) {
+        System.out.println("Are you sure you want to resign?\nEnter 1 to resign, Enter anything else to cancel");
+        String input = scanner.nextLine();
+        if (input.equals("1")) {
+            webSocket.resign(auth, gameID, color);
+        }
+    }
+
+    private void makeMove(Scanner scanner, String auth, ChessGame.TeamColor color, int gameID) {
         ChessPosition startPos = getPos(scanner, "\nWhat piece would you like to move?");
         if (startPos == null) {
             return;
@@ -83,12 +89,12 @@ public class GameplayClient implements NotificationHandler {
             return;
         }
 
-        webSocket.makeMove(auth, gameData.gameID(), color, new ChessMove(startPos, endPos));
+        webSocket.makeMove(auth, gameID, color, new ChessMove(startPos, endPos));
     }
 
-    private void leave(String auth, ChessGame.TeamColor color, GameData gameData) {
+    private void leave(String auth, ChessGame.TeamColor color, int gameID) {
         exitGame();
-        webSocket.leave(auth, gameData.gameID(), color);
+        webSocket.leave(auth, gameID, color);
     }
 
     private ChessPosition getPos(Scanner scanner, String question) {
@@ -236,21 +242,30 @@ public class GameplayClient implements NotificationHandler {
     @Override
     public void notify(ServerMessage serverMessage, String message) {
 //        System.out.println("Attempting to handle message");
+        boolean gameOver = false;
         switch (serverMessage.getServerMessageType()) {
             case ERROR -> handleErrorMessage(new Gson().fromJson(message, ErrorMessage.class));
             case LOAD_GAME -> handleLoadGameMessage(new Gson().fromJson(message, LoadGameMessage.class));
-            case NOTIFICATION -> handleNotificationMessage(new Gson().fromJson(message, NotificationMessage.class));
+            case NOTIFICATION -> gameOver = handleNotificationMessage(new Gson().fromJson(message, NotificationMessage.class));
             default -> throw new RuntimeException("Unknown Server Message");
         }
-        System.out.println("\nEnter a number for what you would like to do! (Enter 1 for help)\n");
+        if (!gameOver) {
+            System.out.println("\nEnter a number for what you would like to do! (Enter 1 for help)");
+        }
     }
 
     private void handleErrorMessage(ErrorMessage errorMessage) {
         System.out.println(errorMessage.getErrorMessage());
     }
 
-    private void handleNotificationMessage(NotificationMessage notificationMessage) {
-        System.out.println(notificationMessage.getMessage());
+    private boolean handleNotificationMessage(NotificationMessage notificationMessage) {
+        String message = notificationMessage.getMessage();
+        System.out.println(message);
+        if (message.contains("wins") || message.contains("tie")) {
+            System.out.println("Enter 3 to exit");
+            return true;
+        }
+        return false;
     }
 
     private void handleLoadGameMessage(LoadGameMessage loadGameMessage) {
