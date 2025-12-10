@@ -113,7 +113,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         int gameID = connectCommand.getGameID();
 
         GameData gameData = getGameData(gameID, session);
-        if (gameData == null) return;
+        if (gameData == null) {
+            return;
+        }
         ChessGame game = gameData.game();
 
         ChessGame.TeamColor foundColor = connectCommand.getColor();
@@ -210,7 +212,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         verifyCheck(makeMoveCommand, newGameData);
     }
 
-    private ChessGame executeMove(GameData gameData, ChessMove move, Session session, ChessGame.TeamColor color) throws InvalidMoveException, IOException, DataAccessException {
+    private ChessGame executeMove(GameData gameData, ChessMove move, Session session,
+                                  ChessGame.TeamColor color) throws InvalidMoveException {
         ChessGame game = gameData.game();
         ChessGame.TeamColor colorTurn = game.getTeamTurn();
         if (colorTurn == null || game.isGameOver()) {
@@ -242,11 +245,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
 
         ChessGame game = gameData.game();
+        String checkUsername = checkColor == ChessGame.TeamColor.WHITE
+                ? gameData.whiteUsername() : gameData.blackUsername();
         if (game.isInCheck(checkColor)) {
             needMessage = true;
-            checkMessage = String.format("%s player is in check!", checkColor);
+            checkMessage = String.format("%s (%s) is in check!", checkUsername, checkColor);
             if (game.isInCheckmate(checkColor)) {
-                checkMessage = String.format("%s player is in checkmate! %s player wins!", checkColor, moveColor);
+                checkMessage = String.format("%s (%s) is in checkmate! %s player wins!", checkUsername, checkColor, moveColor);
                 gameOver = true;
             }
         }
@@ -254,7 +259,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         if (game.isInStalemate(checkColor)) {
             needMessage = true;
             gameOver = true;
-            checkMessage = String.format("%s player is in stalemate! You tie!", checkColor);
+            checkMessage = String.format("%s player is in stalemate! You tie!", checkUsername);
         }
 
         if (needMessage) {
@@ -273,8 +278,4 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         String gameJson = new Gson().toJson(game);
         gameDAO.updateMove(gameJson, gameData.gameID());
     }
-
-//    private void clear() {
-//        connections.clear();
-//    }
 }

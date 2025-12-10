@@ -232,7 +232,8 @@ public class GameplayClient implements NotificationHandler {
     }
 
     private boolean isValid(String num) {
-        return num.equals("1") || num.equals("2") || num.equals("3") || num.equals("4") || num.equals("5") || num.equals("6") || num.equals("7") || num.equals("8");
+        return num.equals("1") || num.equals("2") || num.equals("3") || num.equals("4")
+                || num.equals("5") || num.equals("6") || num.equals("7") || num.equals("8");
     }
 
     private void printGame(ChessBoard board, ChessGame.TeamColor color, ArrayList<ChessPosition> highlightPositions) {
@@ -383,7 +384,8 @@ public class GameplayClient implements NotificationHandler {
     }
 
     private void handleLoadGameMessage(LoadGameMessage loadGameMessage) {
-        this.gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), loadGameMessage.getGame());
+        this.gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(),
+                gameData.gameName(), loadGameMessage.getGame());
         printGame(loadGameMessage.getGame().getBoard(), loadGameMessage.getColor(), new ArrayList<>());
     }
 }
