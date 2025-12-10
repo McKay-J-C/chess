@@ -45,4 +45,18 @@ public class GameConnections {
     public void setObservers(HashSet<Session> observers) {
         this.observers = observers;
     }
+
+    public void updateSessions() {
+        if (whitePlayer != null && !whitePlayer.isOpen()) {
+            whitePlayer = null;
+        }
+        if (blackPlayer != null && !blackPlayer.isOpen()) {
+            blackPlayer = null;
+        }
+        for (Session observer : observers) {
+            if (observer != null && !observer.isOpen()) {
+                removeObserver(observer);
+            }
+        }
+    }
 }

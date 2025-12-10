@@ -80,6 +80,12 @@ public class ConnectionManager {
         sendLoadGame(loadGameMessage, gameConnections, ChessGame.TeamColor.BLACK);
     }
 
+    public void updateSessions() {
+        for (GameConnections gameConnections : connections.values()) {
+            gameConnections.updateSessions();
+        }
+    }
+
     private void sendLoadGame(LoadGameMessage loadGameMessage, GameConnections gameConnections, ChessGame.TeamColor color) throws IOException {
         loadGameMessage = loadGameMessage.setColor(color);
         String msg = new Gson().toJson(loadGameMessage);

@@ -26,12 +26,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     @Override
     public void handleClose(@NotNull WsCloseContext ctx) throws Exception {
-//        System.out.println("Websocket closed");
     }
 
     @Override
     public void handleConnect(@NotNull WsConnectContext ctx) throws Exception {
-//        System.out.println("Websocket connected! session = " + ctx.session);
         ctx.enableAutomaticPings();
     }
 
@@ -111,6 +109,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void connect(ConnectCommand connectCommand, Session session) throws IOException, DataAccessException {
+        connections.updateSessions();
         int gameID = connectCommand.getGameID();
 
         GameData gameData = getGameData(gameID, session);
