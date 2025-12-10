@@ -90,6 +90,8 @@ public class GameplayClient implements NotificationHandler {
         String input = scanner.nextLine();
         if (input.equals("1")) {
             webSocket.resign(auth, gameID, color);
+        } else {
+            System.out.println("Enter a number for what you would like to do (Enter 1 for help)");
         }
     }
 
@@ -102,7 +104,8 @@ public class GameplayClient implements NotificationHandler {
             return;
         }
         //Bad piece at start location
-        if (!checkStartPiece(startPos, color)) {
+        ChessPiece startPiece = gameData.game().getBoard().getPiece(startPos);
+        if (!checkStartPiece(startPiece, color)) {
             return;
         }
 
@@ -111,24 +114,83 @@ public class GameplayClient implements NotificationHandler {
             return;
         }
 
-        webSocket.makeMove(auth, gameID, color, new ChessMove(startPos, endPos));
+        ChessPiece.PieceType pieceType = null;
+        if (startPiece.getPieceType().equals(ChessPiece.PieceType.PAWN)) {
+            pieceType = checkPromotion(scanner, new ChessMove(startPos, endPos), startPiece.getTeamColor(), gameData.game());
+        }
+
+        webSocket.makeMove(auth, gameID, color, new ChessMove(startPos, endPos, pieceType));
+    }
+
+    private ChessPiece.PieceType checkPromotion(Scanner scanner, ChessMove move, ChessGame.TeamColor color, ChessGame game) {
+        if (!inValidMoves(move, game)) {
+            return null;
+        }
+
+        int promoteRow;
+        if (color == ChessGame.TeamColor.WHITE) {
+            promoteRow = 8;
+        } else {
+            promoteRow = 1;
+        }
+
+        if (move.getEndPosition().getRow() == promoteRow) {
+            return getPromotePiece(scanner);
+        }
+        return null;
+    }
+
+    private final String promoteOptions =
+            """
+            You are promoting your pawn! What piece would you like to promote to?
+            1: Queen
+            2: Rook
+            3: Bishop
+            4: Knight
+            """;
+
+    private ChessPiece.PieceType getPromotePiece(Scanner scanner) {
+        System.out.println(promoteOptions);
+        String promoteChoice = scanner.nextLine();
+        switch (promoteChoice) {
+            case "1" -> {return ChessPiece.PieceType.QUEEN;}
+            case "2" -> {return ChessPiece.PieceType.ROOK;}
+            case "3" -> {return ChessPiece.PieceType.BISHOP;}
+            case "4" -> {return ChessPiece.PieceType.KNIGHT;}
+            default -> {
+                System.out.println("Please enter a number 1-4");
+                return getPromotePiece(scanner);
+            }
+        }
+    }
+
+    private boolean inValidMoves(ChessMove move, ChessGame game) {
+        ArrayList<ChessMove> validMoves = game.validMoves(move.getStartPosition());
+        for (ChessMove validMove : validMoves) {
+            if (validMove.getEndPosition().equals(move.getEndPosition())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean checkTeamTurn(ChessGame.TeamColor color) {
         if (!color.equals(gameData.game().getTeamTurn())) {
             System.out.println("It's not your turn!");
+            System.out.println("Enter a number for what you would like to do (Enter 1 for help)");
             return false;
         }
         return true;
     }
 
-    private boolean checkStartPiece(ChessPosition pos, ChessGame.TeamColor color) {
-        ChessPiece startPiece = gameData.game().getBoard().getPiece(pos);
+    private boolean checkStartPiece(ChessPiece startPiece, ChessGame.TeamColor color) {
         if (startPiece == null) {
             System.out.println("No piece at location\n");
+            System.out.println("Enter a number for what you would like to do (Enter 1 for help)");
             return false;
         } else if (startPiece.getTeamColor() != color) {
             System.out.println("Wrong piece color at location\n");
+            System.out.println("Enter a number for what you would like to do (Enter 1 for help)");
             return false;
         }
         return true;
